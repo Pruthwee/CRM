@@ -12,14 +12,13 @@ import org.springframework.web.accept.ContentNegotiationManager;
 import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.view.ContentNegotiatingViewResolver;
 import org.thymeleaf.TemplateEngine;
-import org.thymeleaf.dialect.springdata.SpringDataDialect;
 import org.thymeleaf.extras.java8time.dialect.Java8TimeDialect;
-import org.thymeleaf.extras.springsecurity4.dialect.SpringSecurityDialect;
-import org.thymeleaf.spring4.SpringTemplateEngine;
-import org.thymeleaf.spring4.view.ThymeleafViewResolver;
+import org.thymeleaf.extras.springsecurity5.dialect.SpringSecurityDialect;
+import org.thymeleaf.spring5.SpringTemplateEngine;
+import org.thymeleaf.spring5.view.ThymeleafViewResolver;
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 import org.thymeleaf.templateresolver.ITemplateResolver;
 
@@ -30,7 +29,7 @@ import java.util.List;
 import java.util.Map;
 
 @Configuration
-public class WebAppConfig extends WebMvcConfigurerAdapter {
+public class WebAppConfig implements WebMvcConfigurer {
 
     @Override
     public void addViewControllers(ViewControllerRegistry registry) {
@@ -49,10 +48,9 @@ public class WebAppConfig extends WebMvcConfigurerAdapter {
 
     @Override
     public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
-        configurer.favorPathExtension(true)
+        configurer.favorParameter(true)
                 .ignoreAcceptHeader(false)
-                .defaultContentType(MediaType.APPLICATION_JSON)
-                .useJaf(false);
+                .defaultContentType(MediaType.APPLICATION_JSON);
 
         final Map<String,MediaType> mediaTypes = new HashMap<>();
         mediaTypes.put("html", MediaType.TEXT_HTML);
@@ -157,9 +155,5 @@ public class WebAppConfig extends WebMvcConfigurerAdapter {
         return new PdfViewResolver();
     }
 
-    @Bean
-    public SpringDataDialect springDataDialect() {
-        return new SpringDataDialect();
-    }
 
 }
