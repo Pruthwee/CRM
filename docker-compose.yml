@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  crm-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: crm-app:latest
+    container_name: crm-application
+    ports:
+      - "8080:8080"
+    environment:
+      # Database Configuration
+      - DB_HOST=${DB_HOST:-mysql-host}
+      - DB_PORT=${DB_PORT:-3306}
+      - DB_NAME=${DB_NAME:-crm}
+      - DB_USER=${DB_USER:-root}
+      - DB_PASSWORD=${DB_PASSWORD:-password}
+      # Hibernate Configuration
+      - DDL_AUTO=${DDL_AUTO:-validate}
+      # JVM Options
+      - JAVA_OPTS=-Xmx512m -Xms256m -XX:+UseContainerSupport
+      # Spring Profile
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-docker}
+    volumes:
+      - ./config:/app/config:ro
+    networks:
+      - crm-network
+    restart: unless-stopped
+
+networks:
+  crm-network:
+    driver: bridge

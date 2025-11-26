@@ -1,22 +1,26 @@
 package crm.utils;
 
-import javax.swing.*;
-import javax.swing.filechooser.FileNameExtensionFilter;
 import java.io.File;
 
+/**
+ * Legacy utility class with GUI file chooser.
+ * This class is deprecated for containerized deployments.
+ * Use REST API file upload endpoints instead.
+ */
+@Deprecated
 public class ReadDataUtils {
 
-    public static File ReadFile(String dialogMEssage, JFrame parent, String fileExtensionDescription,
+    /**
+     * @deprecated This method uses Swing GUI components which are incompatible with headless container environments.
+     * Replace with REST API file upload functionality.
+     */
+    @Deprecated
+    public static File ReadFile(String dialogMEssage, Object parent, String fileExtensionDescription,
                                 String... fileExtension) {
-        JFileChooser chooser = new JFileChooser();
-        FileNameExtensionFilter filter = new FileNameExtensionFilter(fileExtensionDescription, fileExtension);
-        chooser.setFileFilter(filter);
-        int returnVal = chooser.showOpenDialog(parent);
-        if (returnVal == JFileChooser.APPROVE_OPTION) {
-            System.out.println("You chose to open this file: " + chooser.getSelectedFile().getName());
-            return chooser.getSelectedFile();
-        }
-        return null;
+        throw new UnsupportedOperationException(
+            "GUI-based file selection is not supported in containerized environments. " +
+            "Please use REST API file upload endpoints instead."
+        );
     }
 
 }
