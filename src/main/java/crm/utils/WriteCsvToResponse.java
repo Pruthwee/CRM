@@ -1,6 +1,6 @@
 package crm.utils;
 
-import com.opencsv.CSVWriter;
+import com.opencsv.ICSVWriter;
 import com.opencsv.bean.ColumnPositionMappingStrategy;
 import com.opencsv.bean.StatefulBeanToCsv;
 import com.opencsv.bean.StatefulBeanToCsvBuilder;
@@ -18,16 +18,15 @@ public class WriteCsvToResponse {
 
     public static void writeCustomers(PrintWriter printWriter, List<Customer> customers) {
         try {
-            ColumnPositionMappingStrategy columnPositionMappingStrategy = new ColumnPositionMappingStrategy();
+            ColumnPositionMappingStrategy<Customer> columnPositionMappingStrategy = new ColumnPositionMappingStrategy<>();
 
             columnPositionMappingStrategy.setType(Customer.class);
-            columnPositionMappingStrategy.generateHeader();
 
             String[] columns = new String[]{"id", "name", "email", "phone", "firstName", "lastName", "city", "address", "enabled"};
             columnPositionMappingStrategy.setColumnMapping(columns);
 
-            StatefulBeanToCsv statefulBeanToCsv = new StatefulBeanToCsvBuilder(printWriter)
-                    .withQuotechar(CSVWriter.NO_QUOTE_CHARACTER)
+            StatefulBeanToCsv<Customer> statefulBeanToCsv = new StatefulBeanToCsvBuilder<Customer>(printWriter)
+                    .withQuotechar(ICSVWriter.NO_QUOTE_CHARACTER)
                     .withMappingStrategy(columnPositionMappingStrategy)
                     .withSeparator(',')
                     .build();
@@ -40,15 +39,15 @@ public class WriteCsvToResponse {
 
     public static void writeCustomer(PrintWriter printWriter, Customer customer) {
         try {
-            ColumnPositionMappingStrategy columnPositionMappingStrategy = new ColumnPositionMappingStrategy();
+            ColumnPositionMappingStrategy<Customer> columnPositionMappingStrategy = new ColumnPositionMappingStrategy<>();
 
             columnPositionMappingStrategy.setType(Customer.class);
 
             String[] columns = new String[]{"id", "name", "email", "phone", "firstName", "lastName", "city", "address", "enabled"};
             columnPositionMappingStrategy.setColumnMapping(columns);
 
-            StatefulBeanToCsv statefulBeanToCsv = new StatefulBeanToCsvBuilder(printWriter)
-                    .withQuotechar(CSVWriter.NO_QUOTE_CHARACTER)
+            StatefulBeanToCsv<Customer> statefulBeanToCsv = new StatefulBeanToCsvBuilder<Customer>(printWriter)
+                    .withQuotechar(ICSVWriter.NO_QUOTE_CHARACTER)
                     .withMappingStrategy(columnPositionMappingStrategy)
                     .withSeparator(',')
                     .build();
