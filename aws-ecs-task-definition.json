@@ -1,0 +1,85 @@
+{
+  "family": "crm-app-task",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "1024",
+  "memory": "2048",
+  "executionRoleArn": "arn:aws:iam::<account-id>:role/ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::<account-id>:role/crmAppTaskRole",
+  "containerDefinitions": [
+    {
+      "name": "crm-app",
+      "image": "<account-id>.dkr.ecr.us-east-1.amazonaws.com/crm-app:latest",
+      "portMappings": [
+        {
+          "containerPort": 8080,
+          "protocol": "tcp"
+        }
+      ],
+      "essential": true,
+      "environment": [
+        {
+          "name": "AWS_REGION",
+          "value": "us-east-1"
+        },
+        {
+          "name": "HIBERNATE_DDL_AUTO",
+          "value": "validate"
+        },
+        {
+          "name": "MANAGEMENT_SECURITY_ENABLED",
+          "value": "true"
+        },
+        {
+          "name": "THYMELEAF_CACHE",
+          "value": "true"
+        },
+        {
+          "name": "THYMELEAF_MODE",
+          "value": "HTML"
+        },
+        {
+          "name": "AWS_S3_ENABLED",
+          "value": "true"
+        },
+        {
+          "name": "AWS_S3_BUCKET_NAME",
+          "value": "crm-pdf-bucket"
+        },
+        {
+          "name": "PORT",
+          "value": "8080"
+        }
+      ],
+      "secrets": [
+        {
+          "name": "DATABASE_URL",
+          "valueFrom": "arn:aws:secretsmanager:us-east-1:<account-id>:secret:crm/database/url"
+        },
+        {
+          "name": "DATABASE_USERNAME",
+          "valueFrom": "arn:aws:secretsmanager:us-east-1:<account-id>:secret:crm/database/username"
+        },
+        {
+          "name": "DATABASE_PASSWORD",
+          "valueFrom": "arn:aws:secretsmanager:us-east-1:<account-id>:secret:crm/database/password"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/crm-app",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "healthCheck": {
+        "command": ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:8080/appinfo/health || exit 1"],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 60
+      }
+    }
+  ]
+}
