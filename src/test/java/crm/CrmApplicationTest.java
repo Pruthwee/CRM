@@ -1,28 +1,23 @@
 package crm;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.DisplayName;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class CrmApplicationTest {
+@DisplayName("CrmApplication Tests")
+class CrmApplicationTest {
 
     @Test
-    public void testCrmApplicationClassExists() {
-        assertNotNull(CrmApplication.class);
+    @DisplayName("Should test main method exists")
+    void testMainMethod() {
+        assertDoesNotThrow(() -> CrmApplication.class.getMethod("main", String[].class));
     }
 
     @Test
-    public void testMainMethodExists() {
-        assertDoesNotThrow(() -> {
-            CrmApplication.class.getDeclaredMethod("main", String[].class);
-        });
-    }
-
-    @Test
-    public void testCrmApplicationConstructor() {
-        assertDoesNotThrow(() -> {
-            CrmApplication application = new CrmApplication();
-            assertNotNull(application);
-        });
+    @DisplayName("Should have Spring Boot Application annotation")
+    void testSpringBootApplication() {
+        assertTrue(CrmApplication.class.isAnnotationPresent(
+                org.springframework.boot.autoconfigure.SpringBootApplication.class));
     }
 }

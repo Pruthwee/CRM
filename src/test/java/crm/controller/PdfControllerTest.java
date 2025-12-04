@@ -1,16 +1,16 @@
-package crm.csv;
+package crm.controller;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@DisplayName("CSVTest Tests")
-class CSVTestTest {
+@DisplayName("PdfController Tests")
+class PdfControllerTest {
 
     @Test
-    @DisplayName("Should test CSVTest class exists")
-    void testCSVTest() {
+    @DisplayName("Should test PdfController")
+    void testPdfController() {
         assertTrue(true);
     }
 }

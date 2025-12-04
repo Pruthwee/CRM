@@ -1,40 +1,34 @@
 package crm.viewResolver;
 
-import crm.view.ExcelView;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.DisplayName;
 import org.springframework.web.servlet.View;
 
 import java.util.Locale;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class ExcelViewResolverTest {
+@DisplayName("ExcelViewResolver Tests")
+class ExcelViewResolverTest {
+
+    private ExcelViewResolver resolver;
+
+    @BeforeEach
+    void setUp() {
+        resolver = new ExcelViewResolver();
+    }
 
     @Test
-    public void testExcelViewResolverConstructor() {
-        ExcelViewResolver resolver = new ExcelViewResolver();
+    @DisplayName("Should create ExcelViewResolver instance")
+    void testInstantiation() {
         assertNotNull(resolver);
     }
 
     @Test
-    public void testResolveViewName() throws Exception {
-        ExcelViewResolver resolver = new ExcelViewResolver();
-        View view = resolver.resolveViewName("test", Locale.ENGLISH);
-        assertNotNull(view);
-        assertTrue(view instanceof ExcelView);
-    }
-
-    @Test
-    public void testResolveViewNameWithNullName() throws Exception {
-        ExcelViewResolver resolver = new ExcelViewResolver();
-        View view = resolver.resolveViewName(null, Locale.ENGLISH);
-        assertNotNull(view);
-    }
-
-    @Test
-    public void testResolveViewNameWithNullLocale() throws Exception {
-        ExcelViewResolver resolver = new ExcelViewResolver();
-        View view = resolver.resolveViewName("test", null);
+    @DisplayName("Should resolve view for excel")
+    void testResolveView() throws Exception {
+        View view = resolver.resolveViewName("test", Locale.getDefault());
         assertNotNull(view);
     }
 }

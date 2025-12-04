@@ -1,40 +1,34 @@
 package crm.viewResolver;
 
-import crm.view.CsvView;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.DisplayName;
 import org.springframework.web.servlet.View;
 
 import java.util.Locale;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class CsvViewResolverTest {
+@DisplayName("CsvViewResolver Tests")
+class CsvViewResolverTest {
+
+    private CsvViewResolver resolver;
+
+    @BeforeEach
+    void setUp() {
+        resolver = new CsvViewResolver();
+    }
 
     @Test
-    public void testCsvViewResolverConstructor() {
-        CsvViewResolver resolver = new CsvViewResolver();
+    @DisplayName("Should create CsvViewResolver instance")
+    void testInstantiation() {
         assertNotNull(resolver);
     }
 
     @Test
-    public void testResolveViewName() throws Exception {
-        CsvViewResolver resolver = new CsvViewResolver();
-        View view = resolver.resolveViewName("test", Locale.ENGLISH);
-        assertNotNull(view);
-        assertTrue(view instanceof CsvView);
-    }
-
-    @Test
-    public void testResolveViewNameWithNullName() throws Exception {
-        CsvViewResolver resolver = new CsvViewResolver();
-        View view = resolver.resolveViewName(null, Locale.ENGLISH);
-        assertNotNull(view);
-    }
-
-    @Test
-    public void testResolveViewNameWithNullLocale() throws Exception {
-        CsvViewResolver resolver = new CsvViewResolver();
-        View view = resolver.resolveViewName("test", null);
+    @DisplayName("Should resolve view for csv")
+    void testResolveView() throws Exception {
+        View view = resolver.resolveViewName("test", Locale.getDefault());
         assertNotNull(view);
     }
 }

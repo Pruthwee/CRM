@@ -1,38 +1,46 @@
 package crm.entity;
 
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.DisplayName;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class ContractTest {
+@DisplayName("Contract Entity Tests")
+class ContractTest {
 
     private Contract contract;
+    private Customer customer;
+    private User user;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         contract = new Contract();
+        customer = Customer.builder().id(1L).name("Test Customer").build();
+        user = User.builder().id(1L).username("testuser").build();
     }
 
     @Test
-    public void testContractConstructor() {
+    @DisplayName("Should create contract with default constructor")
+    void testDefaultConstructor() {
         assertNotNull(contract);
+        assertNull(contract.getId());
+        assertNull(contract.getName());
     }
 
     @Test
-    public void testContractBuilderPattern() {
-        Customer customer = new Customer();
-        User user = new User();
+    @DisplayName("Should create contract with builder")
+    void testBuilderConstructor() {
         LocalDate beginDate = LocalDate.of(2024, 1, 1);
         LocalDate endDate = LocalDate.of(2024, 12, 31);
 
         Contract builtContract = Contract.builder()
                 .id(1L)
                 .name("Test Contract")
-                .content("Test Content")
+                .content("Contract content")
                 .value(new BigDecimal("10000.00"))
                 .beginDate(beginDate)
                 .endDate(endDate)
@@ -42,91 +50,48 @@ public class ContractTest {
                 .build();
 
         assertNotNull(builtContract);
+        assertEquals(1L, builtContract.getId());
         assertEquals("Test Contract", builtContract.getName());
+        assertEquals("Contract content", builtContract.getContent());
         assertEquals(new BigDecimal("10000.00"), builtContract.getValue());
+        assertEquals(beginDate, builtContract.getBeginDate());
+        assertEquals(endDate, builtContract.getEndDate());
+        assertEquals(Status.PROPOSED, builtContract.getStatus());
+        assertEquals(customer, builtContract.getCustomer());
+        assertEquals(user, builtContract.getUser());
     }
 
     @Test
-    public void testAllArgsConstructor() {
-        Customer customer = new Customer();
-        User user = new User();
+    @DisplayName("Should set and get all fields correctly")
+    void testSettersAndGetters() {
         LocalDate beginDate = LocalDate.of(2024, 1, 1);
         LocalDate endDate = LocalDate.of(2024, 12, 31);
+        BigDecimal value = new BigDecimal("50000.50");
 
-        Contract fullContract = new Contract(1L, "Test", "Content", new BigDecimal("10000.00"), beginDate, endDate, Status.PROPOSED, customer, user);
-        assertNotNull(fullContract);
-        assertEquals("Test", fullContract.getName());
-    }
-
-    @Test
-    public void testSetAndGetId() {
-        contract.setId(1L);
-        assertEquals(1L, contract.getId());
-    }
-
-    @Test
-    public void testSetAndGetName() {
-        contract.setName("Test Contract");
-        assertEquals("Test Contract", contract.getName());
-    }
-
-    @Test
-    public void testSetAndGetContent() {
-        contract.setContent("Test Content");
-        assertEquals("Test Content", contract.getContent());
-    }
-
-    @Test
-    public void testSetAndGetValue() {
-        BigDecimal value = new BigDecimal("10000.00");
+        contract.setId(2L);
+        contract.setName("Service Contract");
+        contract.setContent("Service details");
         contract.setValue(value);
-        assertEquals(value, contract.getValue());
-    }
-
-    @Test
-    public void testSetAndGetBeginDate() {
-        LocalDate beginDate = LocalDate.of(2024, 1, 1);
         contract.setBeginDate(beginDate);
-        assertEquals(beginDate, contract.getBeginDate());
-    }
-
-    @Test
-    public void testSetAndGetEndDate() {
-        LocalDate endDate = LocalDate.of(2024, 12, 31);
         contract.setEndDate(endDate);
-        assertEquals(endDate, contract.getEndDate());
-    }
-
-    @Test
-    public void testSetAndGetStatus() {
-        contract.setStatus(Status.PROPOSED);
-        assertEquals(Status.PROPOSED, contract.getStatus());
-    }
-
-    @Test
-    public void testSetAndGetCustomer() {
-        Customer customer = new Customer();
+        contract.setStatus(Status.NEGOTIATED);
         contract.setCustomer(customer);
-        assertEquals(customer, contract.getCustomer());
-    }
-
-    @Test
-    public void testSetAndGetUser() {
-        User user = new User();
         contract.setUser(user);
+
+        assertEquals(2L, contract.getId());
+        assertEquals("Service Contract", contract.getName());
+        assertEquals("Service details", contract.getContent());
+        assertEquals(value, contract.getValue());
+        assertEquals(beginDate, contract.getBeginDate());
+        assertEquals(endDate, contract.getEndDate());
+        assertEquals(Status.NEGOTIATED, contract.getStatus());
+        assertEquals(customer, contract.getCustomer());
         assertEquals(user, contract.getUser());
     }
 
     @Test
-    public void testContractWithNullValues() {
-        contract.setName(null);
-        contract.setValue(null);
-        assertNull(contract.getName());
-        assertNull(contract.getValue());
-    }
-
-    @Test
-    public void testContractWithAllStatuses() {
+    @DisplayName("Should handle all status values")
+    void testAllStatusValues() {
         contract.setStatus(Status.PROPOSED);
         assertEquals(Status.PROPOSED, contract.getStatus());
 
@@ -138,5 +103,156 @@ public class ContractTest {
 
         contract.setStatus(Status.DONE);
         assertEquals(Status.DONE, contract.getStatus());
+    }
+
+    @Test
+    @DisplayName("Should handle null values")
+    void testNullValues() {
+        contract.setId(null);
+        contract.setName(null);
+        contract.setContent(null);
+        contract.setValue(null);
+        contract.setBeginDate(null);
+        contract.setEndDate(null);
+        contract.setStatus(null);
+        contract.setCustomer(null);
+        contract.setUser(null);
+
+        assertNull(contract.getId());
+        assertNull(contract.getName());
+        assertNull(contract.getContent());
+        assertNull(contract.getValue());
+        assertNull(contract.getBeginDate());
+        assertNull(contract.getEndDate());
+        assertNull(contract.getStatus());
+        assertNull(contract.getCustomer());
+        assertNull(contract.getUser());
+    }
+
+    @Test
+    @DisplayName("Should handle zero value")
+    void testZeroValue() {
+        BigDecimal zeroValue = BigDecimal.ZERO;
+        contract.setValue(zeroValue);
+        assertEquals(zeroValue, contract.getValue());
+    }
+
+    @Test
+    @DisplayName("Should handle negative value")
+    void testNegativeValue() {
+        BigDecimal negativeValue = new BigDecimal("-1000.00");
+        contract.setValue(negativeValue);
+        assertEquals(negativeValue, contract.getValue());
+    }
+
+    @Test
+    @DisplayName("Should handle very large value")
+    void testVeryLargeValue() {
+        BigDecimal largeValue = new BigDecimal("999999999999.99");
+        contract.setValue(largeValue);
+        assertEquals(largeValue, contract.getValue());
+    }
+
+    @Test
+    @DisplayName("Should handle same begin and end dates")
+    void testSameBeginAndEndDates() {
+        LocalDate date = LocalDate.of(2024, 6, 15);
+        contract.setBeginDate(date);
+        contract.setEndDate(date);
+        assertEquals(date, contract.getBeginDate());
+        assertEquals(date, contract.getEndDate());
+    }
+
+    @Test
+    @DisplayName("Should handle end date before begin date")
+    void testEndDateBeforeBeginDate() {
+        LocalDate beginDate = LocalDate.of(2024, 12, 31);
+        LocalDate endDate = LocalDate.of(2024, 1, 1);
+        contract.setBeginDate(beginDate);
+        contract.setEndDate(endDate);
+        assertEquals(beginDate, contract.getBeginDate());
+        assertEquals(endDate, contract.getEndDate());
+        assertTrue(contract.getEndDate().isBefore(contract.getBeginDate()));
+    }
+
+    @Test
+    @DisplayName("Should handle empty content")
+    void testEmptyContent() {
+        contract.setContent("");
+        assertEquals("", contract.getContent());
+    }
+
+    @Test
+    @DisplayName("Should handle long content")
+    void testLongContent() {
+        String longContent = "A".repeat(10000);
+        contract.setContent(longContent);
+        assertEquals(longContent, contract.getContent());
+    }
+
+    @Test
+    @DisplayName("Should test equals and hashCode")
+    void testEqualsAndHashCode() {
+        Contract contract1 = Contract.builder()
+                .id(1L)
+                .name("Contract A")
+                .build();
+
+        Contract contract2 = Contract.builder()
+                .id(1L)
+                .name("Contract A")
+                .build();
+
+        assertEquals(contract1, contract2);
+        assertEquals(contract1.hashCode(), contract2.hashCode());
+    }
+
+    @Test
+    @DisplayName("Should test toString method")
+    void testToString() {
+        contract.setId(1L);
+        contract.setName("Test Contract");
+        String result = contract.toString();
+        assertNotNull(result);
+        assertTrue(result.contains("Contract"));
+    }
+
+    @Test
+    @DisplayName("Should handle all args constructor")
+    void testAllArgsConstructor() {
+        LocalDate beginDate = LocalDate.of(2024, 1, 1);
+        LocalDate endDate = LocalDate.of(2024, 12, 31);
+        BigDecimal value = new BigDecimal("25000.00");
+
+        Contract newContract = new Contract(
+                3L,
+                "Full Contract",
+                "Full content",
+                value,
+                beginDate,
+                endDate,
+                Status.IMPLEMENTED,
+                customer,
+                user
+        );
+
+        assertEquals(3L, newContract.getId());
+        assertEquals("Full Contract", newContract.getName());
+        assertEquals("Full content", newContract.getContent());
+        assertEquals(value, newContract.getValue());
+        assertEquals(beginDate, newContract.getBeginDate());
+        assertEquals(endDate, newContract.getEndDate());
+        assertEquals(Status.IMPLEMENTED, newContract.getStatus());
+        assertEquals(customer, newContract.getCustomer());
+        assertEquals(user, newContract.getUser());
+    }
+
+    @Test
+    @DisplayName("Should handle no args constructor")
+    void testNoArgsConstructor() {
+        Contract newContract = new Contract();
+        assertNotNull(newContract);
+        assertNull(newContract.getId());
+        assertNull(newContract.getName());
     }
 }
