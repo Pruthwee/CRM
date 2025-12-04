@@ -28,7 +28,7 @@ public class CSVTest {
                 }
 
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 		/*System.out.println(data.get(0)[1] + "\t" + data.get(0)[2]);
