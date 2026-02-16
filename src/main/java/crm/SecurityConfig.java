@@ -33,16 +33,29 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.authorizeRequests()
-                .antMatchers("/admin/**", "/user/delete/**").hasRole("ADMIN")
-                .antMatchers("/pdf-generator", "/search/**", "/customer/**", "/user/edit/**", "/user/list", "/contract/**").hasAnyRole("ADMIN", "USER", "MANAGER", "OWNER")
+        http.authorizeHttpRequests(authz -> authz
+                .requestMatchers(request -> request.getServletPath().startsWith("/admin/") || request.getServletPath().startsWith("/user/delete/")).hasRole("ADMIN")
+                .requestMatchers(request ->
+                    request.getServletPath().equals("/pdf-generator") ||
+                    request.getServletPath().startsWith("/search/") ||
+                    request.getServletPath().startsWith("/customer/") ||
+                    request.getServletPath().startsWith("/user/edit/") ||
+                    request.getServletPath().equals("/user/list") ||
+                    request.getServletPath().startsWith("/contract/")
+                ).hasAnyRole("ADMIN", "USER", "MANAGER", "OWNER")
                 .anyRequest().permitAll()
-                .and()
-                .formLogin().loginPage("/login").permitAll()
-                .and()
-                .logout().logoutSuccessUrl("/").permitAll()
-                .and()
-                .exceptionHandling().accessDeniedPage("/403");
+        )
+        .formLogin(form -> form
+                .loginPage("/login")
+                .permitAll()
+        )
+        .logout(logout -> logout
+                .logoutSuccessUrl("/")
+                .permitAll()
+        )
+        .exceptionHandling(exception -> exception
+                .accessDeniedPage("/403")
+        );
         return http.build();
     }
 

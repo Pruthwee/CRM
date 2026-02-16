@@ -20,7 +20,7 @@ import org.thymeleaf.spring5.SpringTemplateEngine;
 import org.thymeleaf.spring5.view.ThymeleafViewResolver;
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -57,7 +57,7 @@ public class WebAppConfig implements WebMvcConfigurer {
         mediaTypes.put("json", MediaType.APPLICATION_JSON);
         mediaTypes.put("xls", MediaType.valueOf("application/vnd.ms-excel"));
         mediaTypes.put("pdf", MediaType.APPLICATION_PDF);
-        mediaTypes.put("csv", new MediaType("text","csv", Charset.forName("utf-8")));
+        mediaTypes.put("csv", new MediaType("text","csv", StandardCharsets.UTF_8));
         configurer.mediaTypes(mediaTypes);
     }
 

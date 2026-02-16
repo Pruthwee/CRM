@@ -19,6 +19,8 @@ public class UserServiceImpl implements UserService {
     private RoleRepository roleRepository;
     private BCryptPasswordEncoder passwordEncoder;
     private AuthenticationManager authenticationManager;
+
+    @Autowired
     private SpringDataUserDetailsService springDataUserDetailsService;
 
     @Autowired
@@ -41,10 +43,6 @@ public class UserServiceImpl implements UserService {
         this.authenticationManager = authenticationManager;
     }
 
-    @Autowired
-    public void setSpringDataUserDetailsService(SpringDataUserDetailsService springDataUserDetailsService) {
-        this.springDataUserDetailsService = springDataUserDetailsService;
-    }
 
     @Override
     public User findByUsername(String username) {
@@ -74,11 +72,13 @@ public class UserServiceImpl implements UserService {
             user.setRole(userRole);
             userRepository.save(user);
         }
-        UserDetails userDetails = springDataUserDetailsService.loadUserByUsername(user.getUsername());
-        UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
-                new UsernamePasswordAuthenticationToken(userDetails, password, userDetails.getAuthorities());
-        authenticationManager.authenticate(usernamePasswordAuthenticationToken);
-        SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+        if (springDataUserDetailsService != null) {
+            UserDetails userDetails = springDataUserDetailsService.loadUserByUsername(user.getUsername());
+            UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
+                    new UsernamePasswordAuthenticationToken(userDetails, password, userDetails.getAuthorities());
+            authenticationManager.authenticate(usernamePasswordAuthenticationToken);
+            SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+        }
     }
 
     @Override
