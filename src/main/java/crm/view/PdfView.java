@@ -12,8 +12,20 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Cloud-ready PDF View
+ * - Stateless design (no session dependencies)
+ * - Compatible with horizontal scaling
+ * - Works with cloud load balancers
+ * - In-memory PDF generation (no file system writes)
+ */
 public class PdfView extends AbstractPdfView {
 
+    /**
+     * Build PDF document from model data
+     * Cloud-ready: Stateless operation, all data from model
+     * In-memory generation for immutable infrastructure
+     */
     @Override
     protected void buildPdfDocument(Map<String, Object> model, Document document, PdfWriter writer, HttpServletRequest request, HttpServletResponse response) throws Exception {
         // change the file name
@@ -21,6 +33,12 @@ public class PdfView extends AbstractPdfView {
 
         @SuppressWarnings("unchecked")
         List<User> users = (List<User>) model.get("users");
+        
+        if (users == null || users.isEmpty()) {
+            document.add(new Paragraph("No data available"));
+            return;
+        }
+        
         document.add(new Paragraph("Generated Users " + LocalDate.now()));
 
         PdfPTable table = new PdfPTable(users.stream().findAny().get().getColumnCount());

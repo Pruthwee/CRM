@@ -1,24 +1,35 @@
 package crm.controller;
+import org.springframework.http.ResponseEntity;
+import java.util.List;
 
-import crm.entity.Customer;
-import crm.service.CustomerService;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
-
-import javax.validation.Valid;
-
-@Controller
+// Cloud-ready controller with REST API support
 @RequestMapping("/customer")
 public class CustomerController {
 
-    private CustomerService customerService;
-
-    public CustomerController(CustomerService customerService) {
-        this.customerService = customerService;
     }
 
+    /**
+     * REST API endpoint to get all customers as JSON
+     * GET /customer/api/list
+     * Cloud-ready: Works with API gateways and load balancers
+     */
+    @GetMapping("/api/list")
+    @ResponseBody
+    public ResponseEntity<List<Customer>> getCustomersApi() {
+        List<Customer> customers = (List<Customer>) customerService.listAllCustomers();
+        return ResponseEntity.ok(customers);
+    }
+
+    /**
+     * REST API endpoint to get single customer as JSON
+     * GET /customer/api/{id}
+     * Cloud-ready: Stateless operation
+     */
+    @GetMapping("/api/{id}")
+    @ResponseBody
+    public ResponseEntity<Customer> getCustomerApi(@PathVariable Long id) {
+        Customer customer = customerService.showCustomer(id);
+        return customer != null ? ResponseEntity.ok(customer) : ResponseEntity.notFound().build();
     /**
      * /customer/list
      * <p>

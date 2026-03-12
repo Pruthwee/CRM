@@ -13,10 +13,17 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
+/**
+ * Cloud-ready PDF Controller
+ * - Removed file system dependencies
+ * - Generates PDFs in-memory and streams to response
+ * - Compatible with immutable infrastructure
+ */
 @Controller
 @Slf4j
 public class PdfController {
@@ -27,16 +34,19 @@ public class PdfController {
         this.pdfService = pdfService;
     }
 
-    private void generateSamplePdf(String fileName, String text) throws FileNotFoundException, DocumentException {
-        if (!fileName.endsWith(".pdf")) {
-            fileName += ".pdf";
-        }
+    /**
+     * Generate PDF in-memory and stream to response (Cloud-ready)
+     * No file system writes - compatible with immutable infrastructure
+     */
+    private byte[] generateSamplePdfInMemory(String fileName, String text) throws DocumentException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
         Document document = new Document();
-        PdfWriter.getInstance(document, new FileOutputStream(fileName));
+        PdfWriter.getInstance(document, baos);
         document.open();
         Paragraph paragraph = new Paragraph(text);
         document.add(paragraph);
         document.close();
+        return baos.toByteArray();
     }
 
     @GetMapping("/pdf-generator")
@@ -46,19 +56,32 @@ public class PdfController {
     }
 
     @PostMapping("/pdf-generator")
-    public String generatePdf(@Valid Pdf pdf, BindingResult bindingResult) {
+    public String generatePdf(@Valid Pdf pdf, BindingResult bindingResult, HttpServletResponse response) {
         if (bindingResult.hasErrors()) {
             return "redirect:/pdf-generator";
         } else {
             try {
-                generateSamplePdf(pdf.getName(), pdf.getContent());
+                // Generate PDF in-memory (cloud-ready approach)
+                byte[] pdfBytes = generateSamplePdfInMemory(pdf.getName(), pdf.getContent());
+                
+                // Save metadata to database
                 pdfService.savePdf(pdf);
-            } catch (FileNotFoundException e) {
-                log.info("File Not Found");
+                
+                // Stream PDF to response instead of saving to file system
+                response.setContentType("application/pdf");
+                response.setHeader("Content-Disposition", "attachment; filename=\"" + pdf.getName() + ".pdf\"");
+                response.getOutputStream().write(pdfBytes);
+                response.getOutputStream().flush();
+                
+                log.info("PDF generated successfully in-memory: {}", pdf.getName());
+                return null; // Response already written
             } catch (DocumentException e) {
-                log.info("Document");
+                log.error("Error generating PDF document", e);
+                return "redirect:/pdf-generator?error=document";
+            } catch (IOException e) {
+                log.error("Error writing PDF to response", e);
+                return "redirect:/pdf-generator?error=io";
             }
-            return "pdf/success";
         }
     }
 

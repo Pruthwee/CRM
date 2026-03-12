@@ -1,17 +1,10 @@
 package crm.controller;
 
 import crm.entity.Contract;
-import crm.entity.Customer;
-import crm.entity.User;
-import crm.service.ContractService;
-import crm.service.CustomerService;
-import crm.service.UserService;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.http.ResponseEntity;
+import java.util.List;
 
-import javax.validation.Valid;
+// Cloud-ready controller with REST API support
 
 @Controller
 @RequestMapping("/contract")
@@ -21,12 +14,30 @@ public class ContractController {
 
     private CustomerService customerService;
 
-    private UserService userService;
+    }
 
-    public ContractController(ContractService contractService, CustomerService customerService, UserService userService) {
-        this.contractService = contractService;
-        this.customerService = customerService;
-        this.userService = userService;
+    /**
+     * REST API endpoint to get all contracts as JSON
+     * GET /contract/api/list
+     * Cloud-ready: Works with API gateways and load balancers
+     */
+    @GetMapping("/api/list")
+    @ResponseBody
+    public ResponseEntity<List<Contract>> getContractsApi() {
+        List<Contract> contracts = (List<Contract>) contractService.listAllContracts();
+        return ResponseEntity.ok(contracts);
+    }
+
+    /**
+     * REST API endpoint to get single contract as JSON
+     * GET /contract/api/{id}
+     * Cloud-ready: Stateless operation
+     */
+    @GetMapping("/api/{id}")
+    @ResponseBody
+    public ResponseEntity<Contract> getContractApi(@PathVariable Long id) {
+        Contract contract = contractService.showContract(id);
+        return contract != null ? ResponseEntity.ok(contract) : ResponseEntity.notFound().build();
     }
 
     /**

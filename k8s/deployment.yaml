@@ -1,0 +1,113 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: crm-application
+  labels:
+    app: crm
+    version: v1
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: crm
+  template:
+    metadata:
+      labels:
+        app: crm
+        version: v1
+    spec:
+      containers:
+      - name: crm-app
+        image: crm:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+          name: http
+        env:
+        - name: SPRING_PROFILES_ACTIVE
+          value: "cloud"
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: crm-secrets
+              key: database-url
+        - name: DATABASE_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: crm-secrets
+              key: database-username
+        - name: DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: crm-secrets
+              key: database-password
+        - name: SERVER_PORT
+          value: "8080"
+        - name: LOG_LEVEL
+          value: "INFO"
+        - name: DB_POOL_SIZE
+          value: "20"
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+        livenessProbe:
+          httpGet:
+            path: /appinfo/health
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /appinfo/health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: crm-service
+  labels:
+    app: crm
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 8080
+    protocol: TCP
+    name: http
+  selector:
+    app: crm
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: crm-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: crm-application
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80

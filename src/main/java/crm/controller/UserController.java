@@ -1,30 +1,41 @@
 package crm.controller;
-
-import crm.entity.User;
-import crm.service.UserService;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Controller;
+import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import java.util.List;
 
-import javax.validation.Valid;
-
-@Controller
+// Cloud-ready controller with REST API support
+// Stateless operations compatible with horizontal scaling
 @RequestMapping("/user")
 public class UserController {
 
     private UserService userService;
 
-    public UserController(UserService userService) {
-        this.userService = userService;
+    /**
+     * REST API endpoint to get all users as JSON
+     * GET /user/api/list
+     * Cloud-ready: Works with API gateways and load balancers
+     */
+    @GetMapping("/api/list")
+    @ResponseBody
+    public ResponseEntity<List<User>> getUsersApi() {
+        List<User> users = (List<User>) userService.listAllUsers();
+        return ResponseEntity.ok(users);
     }
 
     /**
+     * REST API endpoint to get single user as JSON
+     * GET /user/api/{id}
+     * Cloud-ready: Stateless operation
+     */
+    @GetMapping("/api/{id}")
+    @ResponseBody
+    public ResponseEntity<User> getUserApi(@PathVariable Long id) {
+        User user = userService.showUser(id);
+        return user != null ? ResponseEntity.ok(user) : ResponseEntity.notFound().build();
+    }
      * /user/list
      * <p>
      * Shows all users

@@ -11,6 +11,13 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayOutputStream;
 import java.util.Map;
 
+/**
+ * Cloud-ready Abstract PDF View
+ * - Stateless design (no session dependencies)
+ * - Compatible with horizontal scaling
+ * - Works with cloud load balancers
+ * - In-memory PDF generation (no file system writes)
+ */
 public abstract class AbstractPdfView extends AbstractView {
 
     /**
@@ -27,10 +34,16 @@ public abstract class AbstractPdfView extends AbstractView {
         return true;
     }
 
+    /**
+     * Cloud-ready: Stateless rendering without session dependencies
+     * All data passed through model, not stored in session
+     * PDF generated in-memory for immutable infrastructure
+     */
     @Override
     protected final void renderMergedOutputModel(Map<String, Object> model, HttpServletRequest request, HttpServletResponse response) throws Exception  {
 
         // IE workaround: write into byte array first.
+        // Cloud-ready: In-memory generation, no file system writes
         ByteArrayOutputStream baos = createTemporaryOutputStream();
 
         // Apply preferences and build metadata.
@@ -41,6 +54,7 @@ public abstract class AbstractPdfView extends AbstractView {
 
         // Build PDF document.
         document.open();
+        // Stateless operation - no session access
         buildPdfDocument(model, document, writer, request, response);
         document.close();
 
@@ -95,6 +109,7 @@ public abstract class AbstractPdfView extends AbstractView {
      * <p>Note that the passed-in HTTP response is just supposed to be used
      * for setting cookies or other HTTP headers. The built PDF document itself
      * will automatically get written to the response after this method returns.
+     * Cloud-ready: Stateless operation, no session dependencies
      * @param model the model Map
      * @param document the iText Document to add elements to
      * @param writer the PdfWriter to use

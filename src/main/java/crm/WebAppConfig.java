@@ -3,23 +3,24 @@ package crm;
 import crm.viewResolver.CsvViewResolver;
 import crm.viewResolver.ExcelViewResolver;
 import crm.viewResolver.PdfViewResolver;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Description;
 import org.springframework.core.Ordered;
 import org.springframework.http.MediaType;
+import org.springframework.session.jdbc.config.annotation.web.http.EnableJdbcHttpSession;
 import org.springframework.web.accept.ContentNegotiationManager;
 import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.view.ContentNegotiatingViewResolver;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.dialect.springdata.SpringDataDialect;
 import org.thymeleaf.extras.java8time.dialect.Java8TimeDialect;
-import org.thymeleaf.extras.springsecurity4.dialect.SpringSecurityDialect;
-import org.thymeleaf.spring4.SpringTemplateEngine;
-import org.thymeleaf.spring4.view.ThymeleafViewResolver;
+import org.thymeleaf.spring5.SpringTemplateEngine;
+import org.thymeleaf.spring5.view.ThymeleafViewResolver;
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 import org.thymeleaf.templateresolver.ITemplateResolver;
 
@@ -29,8 +30,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Cloud-ready Web Application Configuration
+ * - Distributed session management using JDBC (cloud-compatible)
+ * - Caching enabled for better performance
+ * - Stateless architecture support
+ */
 @Configuration
-public class WebAppConfig extends WebMvcConfigurerAdapter {
+@EnableCaching  // Enable distributed caching support
+@EnableJdbcHttpSession(maxInactiveIntervalInSeconds = 1800)  // Store sessions in database for cloud scalability
+public class WebAppConfig implements WebMvcConfigurer {
 
     @Override
     public void addViewControllers(ViewControllerRegistry registry) {
@@ -49,10 +58,12 @@ public class WebAppConfig extends WebMvcConfigurerAdapter {
 
     @Override
     public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
-        configurer.favorPathExtension(true)
+        configurer.favorPathExtension(false)  // Deprecated in newer versions
+                .favorParameter(true)
+                .parameterName("mediaType")
                 .ignoreAcceptHeader(false)
                 .defaultContentType(MediaType.APPLICATION_JSON)
-                .useJaf(false);
+                .useRegisteredExtensionsOnly(false);
 
         final Map<String,MediaType> mediaTypes = new HashMap<>();
         mediaTypes.put("html", MediaType.TEXT_HTML);
@@ -65,6 +76,7 @@ public class WebAppConfig extends WebMvcConfigurerAdapter {
 
     /**
      * Configure ContentNegotiatingViewResolver
+     * Cloud-ready: Supports multiple content types for API gateways
      */
     @Bean
     public ViewResolver contentNegotiatingViewResolver(ContentNegotiationManager manager) {
@@ -105,8 +117,8 @@ public class WebAppConfig extends WebMvcConfigurerAdapter {
         SpringTemplateEngine templateEngine = new SpringTemplateEngine();
         templateEngine.setTemplateResolver(templateResolver());
 
-        // add dialect spring security
-        templateEngine.addDialect(new SpringSecurityDialect());
+        // add dialect spring security (updated for Spring Security 5)
+        templateEngine.addDialect(new org.thymeleaf.extras.springsecurity5.dialect.SpringSecurityDialect());
         return templateEngine;
     }
 

@@ -10,8 +10,20 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Cloud-ready Excel View
+ * - Stateless design (no session dependencies)
+ * - Compatible with horizontal scaling
+ * - Works with cloud load balancers
+ * - In-memory Excel generation (no file system writes)
+ */
 public class ExcelView extends AbstractXlsView{
 
+    /**
+     * Build Excel document from model data
+     * Cloud-ready: Stateless operation, all data from model
+     * In-memory generation for immutable infrastructure
+     */
     @Override
     protected void buildExcelDocument(Map<String, Object> model,
                                       Workbook workbook,
@@ -23,6 +35,13 @@ public class ExcelView extends AbstractXlsView{
 
         @SuppressWarnings("unchecked")
         List<User> users = (List<User>) model.get("users");
+        
+        if (users == null || users.isEmpty()) {
+            Sheet sheet = workbook.createSheet("No Data");
+            Row row = sheet.createRow(0);
+            row.createCell(0).setCellValue("No data available");
+            return;
+        }
 
         // create excel xls sheet
         Sheet sheet = workbook.createSheet("User Detail");
@@ -32,10 +51,10 @@ public class ExcelView extends AbstractXlsView{
         CellStyle style = workbook.createCellStyle();
         Font font = workbook.createFont();
         font.setFontName("Arial");
-        style.setFillForegroundColor(HSSFColor.BLUE.index);
+        style.setFillForegroundColor(HSSFColor.HSSFColorPredefined.BLUE.getIndex());
         style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
         font.setBold(true);
-        font.setColor(HSSFColor.WHITE.index);
+        font.setColor(HSSFColor.HSSFColorPredefined.WHITE.getIndex());
         style.setFont(font);
 
 
