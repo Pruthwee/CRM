@@ -1,20 +1,16 @@
 package crm.controller;
-
-import crm.entity.User;
-import crm.service.UserService;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Controller;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import java.util.List;
 
-import javax.validation.Valid;
-
-@Controller
+/**
+ * Cloud-Ready User Controller with RESTful API support
+ * Supports both traditional MVC and REST API endpoints for cloud environments
+ */
 @RequestMapping("/user")
 public class UserController {
 
@@ -82,10 +78,45 @@ public class UserController {
      *
      * @param id variable type long user id
      * @return redirect:/user/list
+    // ========== RESTful API Endpoints for Cloud Integration ==========
+    
+    /**
+     * REST API: Get all users
+     * Cloud-ready endpoint for API gateways and load balancers
      */
-    @GetMapping("/delete/{id}")
-    public String deleteUser(@PathVariable Long id) {
-        userService.deleteUser(userService.showUser(id));
+    @GetMapping("/api/users")
+    @ResponseBody
+    public ResponseEntity<List<User>> getAllUsersApi() {
+        List<User> users = (List<User>) userService.listAllUsers();
+        return ResponseEntity.ok(users);
+    }
+    
+    /**
+     * REST API: Get user by ID
+     * Cloud-ready endpoint for API gateways and load balancers
+     */
+    @GetMapping("/api/users/{id}")
+    @ResponseBody
+    public ResponseEntity<User> getUserApi(@PathVariable Long id) {
+        User user = userService.showUser(id);
+        if (user != null) {
+            return ResponseEntity.ok(user);
+        }
+        return ResponseEntity.notFound().build();
+    }
+    
+    /**
+     * REST API: Update user
+     * Cloud-ready endpoint for API gateways and load balancers
+     */
+    @PutMapping("/api/users/{id}")
+    @ResponseBody
+    public ResponseEntity<User> updateUserApi(@PathVariable Long id, @Valid @RequestBody User user) {
+        user.setId(id);
+        userService.editUser(user);
+        User updatedUser = userService.showUser(id);
+        return ResponseEntity.ok(updatedUser);
+    }
         return "redirect:/user/list";
     }
 

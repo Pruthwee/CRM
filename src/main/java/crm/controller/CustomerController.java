@@ -1,15 +1,11 @@
 package crm.controller;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import java.util.List;
 
-import crm.entity.Customer;
-import crm.service.CustomerService;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
-
-import javax.validation.Valid;
-
-@Controller
+/**
+ * Cloud-Ready Customer Controller with RESTful API support
+ */
 @RequestMapping("/customer")
 public class CustomerController {
 
@@ -376,10 +372,55 @@ public class CustomerController {
      * @param model    model to add attributes to
      * @return customer/show-list
      */
-    @PostMapping("/city-address-search")
-    public String processRequestCityAddressSearch(@ModelAttribute Customer customer, Model model) {
-        model.addAttribute("customers",
-                customerService.findByEnabledTrueAndCityAndAddress(customer.getCity(), customer.getAddress()));
+    // ========== RESTful API Endpoints for Cloud Integration ==========
+    
+    /**
+     * REST API: Get all customers
+     * Cloud-ready endpoint for API gateways and load balancers
+     */
+    @GetMapping("/api/customers")
+    @ResponseBody
+    public ResponseEntity<List<Customer>> getAllCustomersApi() {
+        List<Customer> customers = (List<Customer>) customerService.listAllCustomers();
+        return ResponseEntity.ok(customers);
+    }
+    
+    /**
+     * REST API: Get customer by ID
+     * Cloud-ready endpoint for API gateways and load balancers
+     */
+    @GetMapping("/api/customers/{id}")
+    @ResponseBody
+    public ResponseEntity<Customer> getCustomerApi(@PathVariable Long id) {
+        Customer customer = customerService.showCustomer(id);
+        if (customer != null) {
+            return ResponseEntity.ok(customer);
+        }
+        return ResponseEntity.notFound().build();
+    }
+    
+    /**
+     * REST API: Create new customer
+     * Cloud-ready endpoint for API gateways and load balancers
+     */
+    @PostMapping("/api/customers")
+    @ResponseBody
+    public ResponseEntity<Customer> createCustomerApi(@Valid @RequestBody Customer customer) {
+        Customer savedCustomer = customerService.saveCustomer(customer);
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedCustomer);
+    }
+    
+    /**
+     * REST API: Update customer
+     * Cloud-ready endpoint for API gateways and load balancers
+     */
+    @PutMapping("/api/customers/{id}")
+    @ResponseBody
+    public ResponseEntity<Customer> updateCustomerApi(@PathVariable Long id, @Valid @RequestBody Customer customer) {
+        customer.setId(id);
+        Customer updatedCustomer = customerService.saveCustomer(customer);
+        return ResponseEntity.ok(updatedCustomer);
+    }
         return "customer/show-list";
     }
 

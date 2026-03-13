@@ -1,12 +1,12 @@
-package crm.controller;
+import crm.entity.User;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ResponseBody;
 
-import crm.service.UserService;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
+import java.util.List;
 
-@Controller
-public class Export {
+/**
+ * Cloud-Ready Export Controller with RESTful API support
+ */
 
     private UserService userService;
 
@@ -18,9 +18,15 @@ public class Export {
      * Handle request to download an Excel document
      */
     @GetMapping("/download")
-    public String download(Model model) {
-        model.addAttribute("users", userService.listAllUsers());
-        return "";
+    /**
+     * REST API: Get all users for export
+     * Cloud-ready endpoint for API gateways and load balancers
+     */
+    @GetMapping("/api/export/users")
+    @ResponseBody
+    public ResponseEntity<List<User>> exportUsersApi() {
+        List<User> users = (List<User>) userService.listAllUsers();
+        return ResponseEntity.ok(users);
     }
 
 }

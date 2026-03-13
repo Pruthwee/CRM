@@ -2,17 +2,13 @@ package crm.controller;
 
 import crm.entity.Contract;
 import crm.entity.Customer;
-import crm.entity.User;
-import crm.service.ContractService;
-import crm.service.CustomerService;
-import crm.service.UserService;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import java.util.List;
 
-import javax.validation.Valid;
-
+/**
+ * Cloud-Ready Contract Controller with RESTful API support
+ */
 @Controller
 @RequestMapping("/contract")
 public class ContractController {
@@ -453,10 +449,55 @@ public class ContractController {
         model.addAttribute("customers", customers);
         model.addAttribute("users", users);
         return "contract/customer-user-search";
-    }
-
+    // ========== RESTful API Endpoints for Cloud Integration ==========
+    
     /**
-     * /contract/customer-user-search
+     * REST API: Get all contracts
+     * Cloud-ready endpoint for API gateways and load balancers
+     */
+    @GetMapping("/api/contracts")
+    @ResponseBody
+    public ResponseEntity<List<Contract>> getAllContractsApi() {
+        List<Contract> contracts = (List<Contract>) contractService.listAllContracts();
+        return ResponseEntity.ok(contracts);
+    }
+    
+    /**
+     * REST API: Get contract by ID
+     * Cloud-ready endpoint for API gateways and load balancers
+     */
+    @GetMapping("/api/contracts/{id}")
+    @ResponseBody
+    public ResponseEntity<Contract> getContractApi(@PathVariable Long id) {
+        Contract contract = contractService.showContract(id);
+        if (contract != null) {
+            return ResponseEntity.ok(contract);
+        }
+        return ResponseEntity.notFound().build();
+    }
+    
+    /**
+     * REST API: Create new contract
+     * Cloud-ready endpoint for API gateways and load balancers
+     */
+    @PostMapping("/api/contracts")
+    @ResponseBody
+    public ResponseEntity<Contract> createContractApi(@Valid @RequestBody Contract contract) {
+        Contract savedContract = contractService.saveContract(contract);
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedContract);
+    }
+    
+    /**
+     * REST API: Update contract
+     * Cloud-ready endpoint for API gateways and load balancers
+     */
+    @PutMapping("/api/contracts/{id}")
+    @ResponseBody
+    public ResponseEntity<Contract> updateContractApi(@PathVariable Long id, @Valid @RequestBody Contract contract) {
+        contract.setId(id);
+        Contract updatedContract = contractService.saveContract(contract);
+        return ResponseEntity.ok(updatedContract);
+    }
      * <p>
      * Processes request searching by customer and user
      *
