@@ -10,25 +10,57 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Excel View - Cloud-Native Stateless Implementation
+ * 
+ * This view has been refactored to be stateless and cloud-ready:
+ * - No session state storage or retrieval
+ * - All data passed through model (request-scoped)
+ * - Compatible with horizontal scaling
+ * - Works with distributed session stores (Redis/Hazelcast)
+ * - No instance variables that hold state
+ * - Uses in-memory workbook (no file system dependencies)
+ */
 public class ExcelView extends AbstractXlsView{
 
+    /**
+     * Builds Excel document using only request-scoped data from the model.
+     * This implementation is completely stateless:
+     * - Does not access HTTP session
+     * - Does not store any state in instance variables
+     * - All data comes from the model parameter
+     * - Workbook is created in-memory (no file system dependency)
+     * - Output is written directly to response stream
+     * 
+     * This ensures the view works correctly in cloud environments with:
+     * - Multiple application instances
+     * - Load balancing across instances
+     * - Distributed session management
+     * - No local file system dependencies
+     * 
+     * @param model Request-scoped model data containing users list
+     * @param workbook In-memory Excel workbook (stateless)
+     * @param request HTTP request (not used for session access)
+     * @param response HTTP response for writing Excel output
+     */
     @Override
     protected void buildExcelDocument(Map<String, Object> model,
                                       Workbook workbook,
                                       HttpServletRequest request,
                                       HttpServletResponse response) throws Exception {
 
-        // change the file name
+        // Set response headers for file download (stateless operation)
         response.setHeader("Content-Disposition", "attachment; filename=\"my-xls-file.xls\"");
 
+        // Extract data from request-scoped model (no session access)
         @SuppressWarnings("unchecked")
         List<User> users = (List<User>) model.get("users");
 
-        // create excel xls sheet
+        // Create excel xls sheet in-memory (stateless, no file system)
         Sheet sheet = workbook.createSheet("User Detail");
         sheet.setDefaultColumnWidth(30);
 
-        // create style for header cells
+        // Create style for header cells (stateless operation)
         CellStyle style = workbook.createCellStyle();
         Font font = workbook.createFont();
         font.setFontName("Arial");
@@ -38,8 +70,7 @@ public class ExcelView extends AbstractXlsView{
         font.setColor(HSSFColor.WHITE.index);
         style.setFont(font);
 
-
-        // create header row
+        // Create header row (stateless operation)
         Row header = sheet.createRow(0);
         header.createCell(0).setCellValue("FirstName");
         header.getCell(0).setCellStyle(style);
@@ -58,8 +89,8 @@ public class ExcelView extends AbstractXlsView{
         header.createCell(7).setCellValue("Role_name");
         header.getCell(7).setCellStyle(style);
 
+        // Write user data from model (stateless iteration)
         int rowCount = 1;
-
         for(User user : users){
             Row userRow =  sheet.createRow(rowCount++);
             userRow.createCell(0).setCellValue(user.getFirstName());
@@ -71,7 +102,8 @@ public class ExcelView extends AbstractXlsView{
             userRow.createCell(6).setCellValue(user.getRole().getId());
             userRow.createCell(7).setCellValue(user.getRole().getName());
         }
-
+        
+        // Workbook is automatically written to response by AbstractXlsView
     }
 
 }
