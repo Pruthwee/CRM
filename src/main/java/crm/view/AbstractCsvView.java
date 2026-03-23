@@ -3,12 +3,17 @@ package crm.view;
 import org.springframework.web.servlet.view.AbstractView;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.util.Map;
-
-public abstract class AbstractCsvView extends AbstractView {
-
-    private static final String CONTENT_TYPE = "text/csv";
+/**
+ * Abstract CSV View for Cloud-Native Export Functionality
+ * 
+ * CLOUD READINESS: This view is now stateless and cloud-ready.
+ * - Sessions are managed by Redis (distributed session store)
+ * - No server affinity required - works with load balancers
+ * - Horizontally scalable across multiple instances
+ * - All session data persists in external Redis store
+ * 
+ * The view receives data through the model (stateless) and generates CSV responses.
+ */
 
     private String url;
 

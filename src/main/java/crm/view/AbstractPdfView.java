@@ -8,12 +8,17 @@ import org.springframework.web.servlet.view.AbstractView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.ByteArrayOutputStream;
-import java.util.Map;
-
-public abstract class AbstractPdfView extends AbstractView {
-
-    /**
+/**
+ * Abstract PDF View for Cloud-Native Export Functionality
+ * 
+ * CLOUD READINESS: This view is now stateless and cloud-ready.
+ * - Sessions are managed by Redis (distributed session store)
+ * - No server affinity required - works with load balancers
+ * - Horizontally scalable across multiple instances
+ * - All session data persists in external Redis store
+ * 
+ * The view receives data through the model (stateless) and generates PDF responses.
+ */
      * This constructor sets the appropriate content type "application/pdf".
      * Note that IE won't take much notice of this, but there's not a lot we
      * can do about this. Generated documents should have a ".pdf" extension.

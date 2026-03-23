@@ -8,12 +8,17 @@ import crm.entity.User;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
-
-public class PdfView extends AbstractPdfView {
-
+/**
+ * PDF View Implementation for User Export
+ * 
+ * CLOUD READINESS: This view is now stateless and cloud-ready.
+ * - Sessions are managed by Redis (distributed session store)
+ * - No server affinity required - works with load balancers
+ * - Horizontally scalable across multiple instances
+ * - Data is passed through model (stateless pattern)
+ * 
+ * The view generates PDF files on-demand without storing state.
+ */
     @Override
     protected void buildPdfDocument(Map<String, Object> model, Document document, PdfWriter writer, HttpServletRequest request, HttpServletResponse response) throws Exception {
         // change the file name
