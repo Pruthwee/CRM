@@ -1,0 +1,1 @@
+Docker Compose configuration for local development. Includes application service with health checks, environment variables, and volume mounts. Does NOT include database or other infrastructure services.

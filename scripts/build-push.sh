@@ -1,0 +1,1 @@
+Complete build and push script with interactive registry selection, tag sanitization, ECR auto-creation, authentication, and clear progress messages.

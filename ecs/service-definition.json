@@ -1,0 +1,1 @@
+Complete ECS Fargate service definition with serviceName 'crm-service', desiredCount 2, launchType 'FARGATE', networkConfiguration with awsvpcConfiguration (subnets, security groups, assignPublicIp), deploymentConfiguration with circuit breaker, loadBalancers configuration with target group, healthCheckGracePeriodSeconds 300, and proper tags (NOT serviceTags).

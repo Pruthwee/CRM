@@ -1,0 +1,1 @@
+Windows-compatible ECS Fargate deployment script with delayed expansion, proper error handling, automated ALB/TG creation, service creation/update, and comprehensive output.

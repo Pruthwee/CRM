@@ -1,0 +1,1 @@
+Multi-stage Docker build with Maven builder and Java 8 JRE runtime. Includes dependency caching, non-root user, and JVM optimizations for containerized environments.

@@ -1,0 +1,1 @@
+Comprehensive .dockerignore file excluding Maven wrapper files (mvnw, mvnw.cmd, .mvn/), build artifacts, IDE files, documentation, and unnecessary files from Docker build context.

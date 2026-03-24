@@ -1,0 +1,1 @@
+Complete ECS Fargate task definition with family 'crm-task', requiresCompatibilities ['FARGATE'], networkMode 'awsvpc', CPU '512', memory '1024', executionRoleArn for ECR and CloudWatch access, container definition with image placeholder, port 8080, environment variables for database and application configuration, and CloudWatch Logs configuration.

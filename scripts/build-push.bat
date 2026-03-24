@@ -1,0 +1,1 @@
+Windows-compatible build and push script with delayed expansion, proper error handling using !ERRORLEVEL!, tag sanitization using PowerShell, and ECR repository auto-creation.

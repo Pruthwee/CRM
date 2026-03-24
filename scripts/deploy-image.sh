@@ -1,0 +1,1 @@
+Complete ECS Fargate deployment script with strict error handling, cluster creation, automated Application Load Balancer and Target Group creation (target-type ip for Fargate), service creation/update with full task definition ARN, service stability wait, and comprehensive output including CloudWatch logs and application URL.
