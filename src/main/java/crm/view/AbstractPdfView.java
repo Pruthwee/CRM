@@ -8,12 +8,16 @@ import org.springframework.web.servlet.view.AbstractView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.ByteArrayOutputStream;
-import java.util.Map;
-
-public abstract class AbstractPdfView extends AbstractView {
-
-    /**
+/**
+ * Abstract PDF View for generating PDF exports using iText
+ * 
+ * Cloud-Native Considerations:
+ * - This view uses HttpServletRequest/Response but does NOT store state in HTTP session
+ * - Session state is managed by Spring Session Redis (configured in RedisSessionConfig)
+ * - The view is stateless and can be used across multiple instances
+ * - All session data is externalized to Redis for horizontal scaling
+ * - Compatible with cloud load balancers and auto-scaling groups
+ */
      * This constructor sets the appropriate content type "application/pdf".
      * Note that IE won't take much notice of this, but there's not a lot we
      * can do about this. Generated documents should have a ".pdf" extension.

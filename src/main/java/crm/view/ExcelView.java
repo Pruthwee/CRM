@@ -7,12 +7,16 @@ import org.springframework.web.servlet.view.document.AbstractXlsView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.List;
-import java.util.Map;
-
-public class ExcelView extends AbstractXlsView{
-
-    @Override
+/**
+ * Excel View implementation for exporting user data to XLS format
+ * 
+ * Cloud-Native Considerations:
+ * - This view uses HttpServletRequest/Response but does NOT store state in HTTP session
+ * - Session state is managed by Spring Session Redis (configured in RedisSessionConfig)
+ * - The view is stateless and can be used across multiple instances
+ * - All session data is externalized to Redis for horizontal scaling
+ * - Compatible with cloud load balancers and auto-scaling groups
+ */
     protected void buildExcelDocument(Map<String, Object> model,
                                       Workbook workbook,
                                       HttpServletRequest request,
