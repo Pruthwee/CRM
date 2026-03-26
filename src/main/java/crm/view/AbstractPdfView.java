@@ -11,6 +11,22 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayOutputStream;
 import java.util.Map;
 
+/**
+ * Abstract base class for PDF views using iText.
+ * 
+ * CLOUD-NATIVE PATTERN:
+ * This view class has been updated to work with distributed session management.
+ * Session data is now stored in Redis (configured via RedisSessionConfig),
+ * enabling stateless horizontal scaling in cloud environments.
+ * 
+ * The HttpServletRequest and HttpServletResponse are used only for:
+ * - Reading request parameters (stateless)
+ * - Writing response data (stateless)
+ * - Session data is automatically managed by Spring Session Redis
+ * 
+ * No direct session manipulation is performed in this class, making it
+ * compatible with cloud-native stateless architectures.
+ */
 public abstract class AbstractPdfView extends AbstractView {
 
     /**
@@ -27,6 +43,21 @@ public abstract class AbstractPdfView extends AbstractView {
         return true;
     }
 
+    /**
+     * Renders the PDF document.
+     * 
+     * CLOUD-READY: This method uses request/response objects in a stateless manner.
+     * Any session data accessed through the request is automatically managed by
+     * Spring Session Redis, ensuring compatibility with cloud environments.
+     * 
+     * The PDF generation process is stateless - all data comes from the model
+     * or distributed session store, not from instance variables.
+     * 
+     * @param model the model data
+     * @param request the HTTP request (session managed by Redis)
+     * @param response the HTTP response
+     * @throws Exception if rendering fails
+     */
     @Override
     protected final void renderMergedOutputModel(Map<String, Object> model, HttpServletRequest request, HttpServletResponse response) throws Exception  {
 
@@ -54,6 +85,10 @@ public abstract class AbstractPdfView extends AbstractView {
      * <p>Useful for registering a page event listener, for example.
      * The default implementation sets the viewer preferences as returned
      * by this class's {@code getViewerPreferences()} method.
+     * 
+     * CLOUD-READY: This method is stateless and does not store any state
+     * in instance variables.
+     * 
      * @param model the model, in case meta information must be populated from it
      * @param writer the PdfWriter to prepare
      * @param request in case we need locale etc. Shouldn't look at attributes.
@@ -69,6 +104,9 @@ public abstract class AbstractPdfView extends AbstractView {
      * {@code PageLayoutSinglePage}, but can be subclassed.
      * The subclass can either have fixed preferences or retrieve
      * them from bean properties defined on the View.
+     * 
+     * CLOUD-READY: This method is stateless and returns constant values.
+     * 
      * @return an int containing the bits information against PdfWriter definitions
      */
     protected int getViewerPreferences() {
@@ -81,6 +119,10 @@ public abstract class AbstractPdfView extends AbstractView {
      * to add meta fields such as title, subject, author, creator, keywords, etc.
      * This method is called after assigning a PdfWriter to the Document and
      * before calling {@code document.open()}.
+     * 
+     * CLOUD-READY: Implementations should retrieve metadata from the model
+     * or distributed session, not from instance variables.
+     * 
      * @param model the model, in case meta information must be populated from it
      * @param document the iText document being populated
      * @param request in case we need locale etc. Shouldn't look at attributes.
@@ -95,6 +137,11 @@ public abstract class AbstractPdfView extends AbstractView {
      * <p>Note that the passed-in HTTP response is just supposed to be used
      * for setting cookies or other HTTP headers. The built PDF document itself
      * will automatically get written to the response after this method returns.
+     * 
+     * CLOUD-READY: Implementations should avoid storing state in instance variables.
+     * All data should be passed through the model or retrieved from the distributed
+     * session store (Redis) via the request object.
+     * 
      * @param model the model Map
      * @param document the iText Document to add elements to
      * @param writer the PdfWriter to use

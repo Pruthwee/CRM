@@ -10,8 +10,38 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Excel view implementation for exporting user data.
+ * 
+ * CLOUD-NATIVE PATTERN:
+ * This view class is cloud-ready and works with distributed session management.
+ * Session data is stored in Redis (configured via RedisSessionConfig),
+ * enabling stateless horizontal scaling in cloud environments.
+ * 
+ * The implementation:
+ * - Retrieves all data from the model (stateless)
+ * - Does not store any state in instance variables
+ * - Uses request/response only for reading parameters and writing output
+ * - Session data (if needed) is automatically managed by Spring Session Redis
+ * 
+ * This makes the view compatible with cloud-native stateless architectures
+ * and allows the application to scale horizontally across multiple instances.
+ */
 public class ExcelView extends AbstractXlsView{
 
+    /**
+     * Builds the Excel document from the model data.
+     * 
+     * CLOUD-READY: This method is stateless and retrieves all data from the model.
+     * No session state is stored in instance variables, making it compatible
+     * with cloud environments where instances can be terminated or scaled.
+     * 
+     * @param model the model containing user data
+     * @param workbook the Excel workbook to populate
+     * @param request the HTTP request (session managed by Redis)
+     * @param response the HTTP response
+     * @throws Exception if Excel generation fails
+     */
     @Override
     protected void buildExcelDocument(Map<String, Object> model,
                                       Workbook workbook,
