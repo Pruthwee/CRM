@@ -10,25 +10,59 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Map;
 
-public class ExcelView extends AbstractXlsView{
+/**
+ * Excel View implementation for exporting user data.
+ * 
+ * Cloud-Native Design:
+ * - Stateless: No session state storage or access
+ * - Request-scoped: All data passed via model Map
+ * - In-memory: Excel generated in-memory (no file system)
+ * - Streaming: Workbook written directly to response
+ * - Scalable: Compatible with horizontal scaling and load balancing
+ * - Ephemeral: No local state, suitable for containerized environments
+ * 
+ * This implementation follows 12-factor app principles:
+ * - Stateless processes
+ * - No local file system dependency
+ * - Suitable for cloud deployment (AWS, Azure, GCP)
+ */
+public class ExcelView extends AbstractXlsView {
 
+    /**
+     * Builds Excel document from model data and streams to response.
+     * 
+     * Cloud-Ready Implementation:
+     * - Uses only request-scoped data from model Map
+     * - Does NOT access HttpSession (stateless)
+     * - Workbook generated in-memory (no file system)
+     * - Written directly to response stream
+     * - No instance variables used for state storage
+     * - Thread-safe and suitable for concurrent requests
+     * 
+     * @param model Request-scoped data containing users list
+     * @param workbook POI Workbook for Excel generation (in-memory)
+     * @param request HTTP request (not used for session access)
+     * @param response HTTP response for streaming Excel output
+     * @throws Exception if Excel generation fails
+     */
     @Override
     protected void buildExcelDocument(Map<String, Object> model,
                                       Workbook workbook,
                                       HttpServletRequest request,
                                       HttpServletResponse response) throws Exception {
 
-        // change the file name
+        // Set response headers for file download
         response.setHeader("Content-Disposition", "attachment; filename=\"my-xls-file.xls\"");
 
+        // Extract data from request-scoped model (stateless operation)
         @SuppressWarnings("unchecked")
         List<User> users = (List<User>) model.get("users");
 
-        // create excel xls sheet
+        // Create excel xls sheet (in-memory, no file system)
         Sheet sheet = workbook.createSheet("User Detail");
         sheet.setDefaultColumnWidth(30);
 
-        // create style for header cells
+        // Create style for header cells
         CellStyle style = workbook.createCellStyle();
         Font font = workbook.createFont();
         font.setFontName("Arial");
@@ -38,8 +72,7 @@ public class ExcelView extends AbstractXlsView{
         font.setColor(HSSFColor.WHITE.index);
         style.setFont(font);
 
-
-        // create header row
+        // Create header row
         Row header = sheet.createRow(0);
         header.createCell(0).setCellValue("FirstName");
         header.getCell(0).setCellStyle(style);
@@ -60,6 +93,7 @@ public class ExcelView extends AbstractXlsView{
 
         int rowCount = 1;
 
+        // Process each user record (stateless processing)
         for(User user : users){
             Row userRow =  sheet.createRow(rowCount++);
             userRow.createCell(0).setCellValue(user.getFirstName());
@@ -71,7 +105,8 @@ public class ExcelView extends AbstractXlsView{
             userRow.createCell(6).setCellValue(user.getRole().getId());
             userRow.createCell(7).setCellValue(user.getRole().getName());
         }
-
+        
+        // Workbook is automatically written to response by AbstractXlsView
+        // No file system operations, all in-memory
     }
-
 }

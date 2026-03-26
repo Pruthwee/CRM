@@ -11,6 +11,20 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayOutputStream;
 import java.util.Map;
 
+/**
+ * Abstract base class for PDF views in cloud-native environment.
+ * 
+ * Cloud-Ready Improvements:
+ * - Stateless design: No session state storage
+ * - All data passed through model Map (request-scoped)
+ * - PDF generated in-memory using ByteArrayOutputStream
+ * - Response written directly to output stream (no file system dependency)
+ * - Compatible with horizontal scaling and load balancing
+ * 
+ * This view generates PDF content on-the-fly without storing state,
+ * making it suitable for cloud deployment where instances can be
+ * terminated or scaled at any time.
+ */
 public abstract class AbstractPdfView extends AbstractView {
 
     /**
@@ -27,24 +41,38 @@ public abstract class AbstractPdfView extends AbstractView {
         return true;
     }
 
+    /**
+     * Renders the PDF view by generating the document and streaming to response.
+     * 
+     * Cloud-Native Pattern:
+     * - Data is passed via model Map (stateless, request-scoped)
+     * - No session state is accessed or stored
+     * - PDF generated in-memory (no file system operations)
+     * - Response is streamed directly to client
+     * - Suitable for containerized and serverless environments
+     * 
+     * @param model Request-scoped data model
+     * @param request HTTP request (used only for request metadata, not session)
+     * @param response HTTP response for streaming output
+     */
     @Override
     protected final void renderMergedOutputModel(Map<String, Object> model, HttpServletRequest request, HttpServletResponse response) throws Exception  {
 
-        // IE workaround: write into byte array first.
+        // IE workaround: write into byte array first (in-memory, no file system)
         ByteArrayOutputStream baos = createTemporaryOutputStream();
 
-        // Apply preferences and build metadata.
+        // Apply preferences and build metadata
         Document document = new Document(PageSize.A4.rotate(), 36, 36, 54, 36);
         PdfWriter writer = PdfWriter.getInstance(document, baos);
         prepareWriter(model, writer, request);
         buildPdfMetadata(model, document, request);
 
-        // Build PDF document.
+        // Build PDF document (stateless operation using model data only)
         document.open();
         buildPdfDocument(model, document, writer, request, response);
         document.close();
 
-        // Flush to HTTP response.
+        // Flush to HTTP response (direct streaming, no file system)
         writeToResponse(response, baos);
     }
 
@@ -54,9 +82,12 @@ public abstract class AbstractPdfView extends AbstractView {
      * <p>Useful for registering a page event listener, for example.
      * The default implementation sets the viewer preferences as returned
      * by this class's {@code getViewerPreferences()} method.
+     * 
+     * Cloud-Native Note: This method should not access session state.
+     * 
      * @param model the model, in case meta information must be populated from it
      * @param writer the PdfWriter to prepare
-     * @param request in case we need locale etc. Shouldn't look at attributes.
+     * @param request in case we need locale etc. Shouldn't look at attributes or session.
      * @throws DocumentException if thrown during writer preparation
      */
     protected void prepareWriter(Map<String, Object> model, PdfWriter writer, HttpServletRequest request) throws DocumentException {
@@ -81,9 +112,12 @@ public abstract class AbstractPdfView extends AbstractView {
      * to add meta fields such as title, subject, author, creator, keywords, etc.
      * This method is called after assigning a PdfWriter to the Document and
      * before calling {@code document.open()}.
+     * 
+     * Cloud-Native Note: This method should not access session state.
+     * 
      * @param model the model, in case meta information must be populated from it
      * @param document the iText document being populated
-     * @param request in case we need locale etc. Shouldn't look at attributes.
+     * @param request in case we need locale etc. Shouldn't look at attributes or session.
      */
     protected void buildPdfMetadata(Map<String, Object> model, Document document, HttpServletRequest request) {
     }
@@ -95,10 +129,18 @@ public abstract class AbstractPdfView extends AbstractView {
      * <p>Note that the passed-in HTTP response is just supposed to be used
      * for setting cookies or other HTTP headers. The built PDF document itself
      * will automatically get written to the response after this method returns.
-     * @param model the model Map
+     * 
+     * Implementation Guidelines for Cloud Compatibility:
+     * - Use only data from the model Map (request-scoped)
+     * - Do NOT access HttpSession
+     * - Do NOT store state in instance variables
+     * - Do NOT write to local file system
+     * - All PDF content should be generated in-memory
+     * 
+     * @param model the model Map (request-scoped data)
      * @param document the iText Document to add elements to
      * @param writer the PdfWriter to use
-     * @param request in case we need locale etc. Shouldn't look at attributes.
+     * @param request in case we need locale etc. Shouldn't look at attributes or session.
      * @param response in case we need to set cookies. Shouldn't write to it.
      * @throws Exception any exception that occurred during document building
      */
