@@ -9,18 +9,43 @@ import java.util.Map;
 /**
  * Abstract base class for CSV views in a cloud-native stateless architecture.
  * 
- * CLOUD READINESS NOTES:
- * - This view is designed to be stateless and does not store data in HTTP session
- * - All data is passed through the model parameter, not session attributes
- * - Session data (if needed) is managed by Spring Session with Redis for distributed storage
- * - This enables horizontal scaling and load balancing without sticky sessions
- * - Compatible with AWS, Azure, and GCP cloud environments
+ * CLOUD READINESS IMPLEMENTATION (AWS Compatible):
+ * ================================================
+ * This view is fully stateless and cloud-ready for horizontal scaling:
  * 
- * STATELESS DESIGN:
- * - No instance variables store request-specific data
- * - All data flows through method parameters (model, request, response)
- * - No dependency on server-side session state
- * - Each request is independent and can be handled by any instance
+ * 1. NO HTTP SESSION DEPENDENCIES:
+ *    - Does NOT access HttpSession.getAttribute() or setAttribute()
+ *    - All data is passed through the model parameter from controllers
+ *    - Session state (if needed) is managed externally by Spring Session + Redis
+ * 
+ * 2. STATELESS DESIGN PRINCIPLES:
+ *    - No instance variables store request-specific data
+ *    - All data flows through method parameters (model, request, response)
+ *    - Each request is independent and can be handled by any instance
+ *    - No server affinity required for load balancing
+ * 
+ * 3. CLOUD-NATIVE PATTERNS:
+ *    - Compatible with AWS ECS, EKS, Elastic Beanstalk
+ *    - Supports auto-scaling without data loss
+ *    - Works with Application Load Balancer (no sticky sessions needed)
+ *    - CSV generation is in-memory (no file system dependency)
+ * 
+ * 4. DISTRIBUTED SESSION MANAGEMENT:
+ *    - If session data is needed, it's stored in Redis (AWS ElastiCache)
+ *    - Session data persists across instance restarts
+ *    - Multiple instances share session state transparently
+ * 
+ * USAGE PATTERN:
+ * ==============
+ * Controllers should pass all required data through the model:
+ * 
+ *   @GetMapping("/export/csv")
+ *   public String exportCsv(Model model) {
+ *       model.addAttribute("data", dataService.getData());
+ *       return "csvView";
+ *   }
+ * 
+ * DO NOT use session.setAttribute() for view data.
  */
 public abstract class AbstractCsvView extends AbstractView {
 
@@ -44,8 +69,16 @@ public abstract class AbstractCsvView extends AbstractView {
 
     /**
      * Renders CSV content in a stateless manner.
-     * All data is provided through the model parameter, not session storage.
-     * This ensures compatibility with distributed cloud environments.
+     * 
+     * CLOUD-NATIVE IMPLEMENTATION:
+     * - All data is provided through the model parameter (not session)
+     * - CSV is written directly to response output stream (no file system)
+     * - No server-side state is created or accessed
+     * - Compatible with distributed cloud environments
+     * 
+     * @param model Contains all data needed for CSV generation (passed by controller)
+     * @param request HTTP request (used for headers only, not session access)
+     * @param response HTTP response (CSV is written directly to output stream)
      */
     @Override
     protected final void renderMergedOutputModel(
@@ -56,8 +89,30 @@ public abstract class AbstractCsvView extends AbstractView {
 
     /**
      * Build the CSV document from model data.
-     * Implementations should NOT access session state directly.
-     * All required data should be passed through the model parameter.
+     * 
+     * IMPLEMENTATION REQUIREMENTS FOR CLOUD READINESS:
+     * =================================================
+     * 1. Retrieve all data from the 'model' parameter
+     * 2. DO NOT call request.getSession().getAttribute()
+     * 3. Write CSV directly to response.getWriter() or response.getOutputStream()
+     * 4. Do NOT write to file system (use in-memory streams only)
+     * 5. Ensure method is stateless (no instance variable modifications)
+     * 
+     * Example implementation:
+     * 
+     *   @Override
+     *   protected void buildCsvDocument(Map<String, Object> model, 
+     *                                   HttpServletRequest request, 
+     *                                   HttpServletResponse response) throws Exception {
+     *       List<Data> data = (List<Data>) model.get("data");
+     *       CSVWriter writer = new CSVWriter(response.getWriter());
+     *       // Write CSV data...
+     *       writer.close();
+     *   }
+     * 
+     * @param model Contains all data for CSV generation (from controller)
+     * @param request HTTP request (for headers, NOT for session access)
+     * @param response HTTP response (write CSV directly to output stream)
      */
     protected abstract void buildCsvDocument(
             Map<String, Object> model, HttpServletRequest request, HttpServletResponse response)
