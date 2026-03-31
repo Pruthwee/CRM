@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  # Redis for distributed session management
+  redis:
+    image: redis:6-alpine
+    container_name: crm-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+    networks:
+      - crm-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    restart: unless-stopped
+
+  # MySQL database
+  mysql:
+    image: mysql:5.7
+    container_name: crm-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: crm
+      MYSQL_USER: crmuser
+      MYSQL_PASSWORD: crmpass
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - crm-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  # CRM Application (optional - for testing)
+  # Uncomment to run the application in Docker
+  # app:
+  #   build: .
+  #   container_name: crm-app
+  #   ports:
+  #     - "8080:8080"
+  #   environment:
+  #     - SPRING_PROFILES_ACTIVE=cloud
+  #     - DATABASE_URL=jdbc:mysql://mysql:3306/crm?useSSL=false
+  #     - DATABASE_USERNAME=crmuser
+  #     - DATABASE_PASSWORD=crmpass
+  #     - REDIS_HOST=redis
+  #     - REDIS_PORT=6379
+  #   depends_on:
+  #     - mysql
+  #     - redis
+  #   networks:
+  #     - crm-network
+  #   restart: unless-stopped
+
+volumes:
+  redis-data:
+    driver: local
+  mysql-data:
+    driver: local
+
+networks:
+  crm-network:
+    driver: bridge

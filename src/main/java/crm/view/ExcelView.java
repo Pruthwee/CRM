@@ -10,8 +10,45 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Excel View implementation for exporting User data.
+ * 
+ * CLOUD-NATIVE STATELESS DESIGN:
+ * This view is fully stateless and cloud-ready:
+ * - Receives all data via the model (request-scoped)
+ * - Does NOT access or store HTTP session state
+ * - Excel workbook is created in-memory (no file system dependencies)
+ * - Writes directly to response output stream
+ * - Safe for horizontal scaling across multiple instances
+ * 
+ * Session Management:
+ * If session data is needed, it is now managed by Spring Session with Redis,
+ * allowing stateless application instances that can scale horizontally.
+ * 
+ * Cloud Deployment:
+ * - Compatible with AWS ECS, EKS, Lambda, and other platforms
+ * - Works correctly behind load balancers without sticky sessions
+ * - No server affinity required
+ * - Stateless operation enables auto-scaling
+ * - Memory-efficient in-memory Excel generation
+ */
 public class ExcelView extends AbstractXlsView{
 
+    /**
+     * Builds Excel document from user data in the model.
+     * 
+     * STATELESS IMPLEMENTATION:
+     * - All data comes from the model parameter (request-scoped)
+     * - No session state is accessed or modified
+     * - Excel workbook is created in-memory
+     * - No temporary files or server-side storage used
+     * - Workbook is written directly to response stream
+     * 
+     * @param model Contains "users" list - passed from controller (request-scoped)
+     * @param workbook In-memory Excel workbook (no file system dependencies)
+     * @param request HTTP request (not used for session access)
+     * @param response HTTP response for Excel output
+     */
     @Override
     protected void buildExcelDocument(Map<String, Object> model,
                                       Workbook workbook,
@@ -21,10 +58,11 @@ public class ExcelView extends AbstractXlsView{
         // change the file name
         response.setHeader("Content-Disposition", "attachment; filename=\"my-xls-file.xls\"");
 
+        // Get users from request-scoped model (NOT from session)
         @SuppressWarnings("unchecked")
         List<User> users = (List<User>) model.get("users");
 
-        // create excel xls sheet
+        // create excel xls sheet - all in-memory, no file system access
         Sheet sheet = workbook.createSheet("User Detail");
         sheet.setDefaultColumnWidth(30);
 
@@ -60,6 +98,7 @@ public class ExcelView extends AbstractXlsView{
 
         int rowCount = 1;
 
+        // Populate data rows - all processing is stateless and request-scoped
         for(User user : users){
             Row userRow =  sheet.createRow(rowCount++);
             userRow.createCell(0).setCellValue(user.getFirstName());
