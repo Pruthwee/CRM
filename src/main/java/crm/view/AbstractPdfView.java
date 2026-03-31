@@ -11,6 +11,23 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayOutputStream;
 import java.util.Map;
 
+/**
+ * Abstract base class for PDF views in a cloud-native stateless architecture.
+ * 
+ * CLOUD READINESS NOTES:
+ * - This view is designed to be stateless and does not store data in HTTP session
+ * - All data is passed through the model parameter, not session attributes
+ * - Session data (if needed) is managed by Spring Session with Redis for distributed storage
+ * - This enables horizontal scaling and load balancing without sticky sessions
+ * - Compatible with AWS, Azure, and GCP cloud environments
+ * 
+ * STATELESS DESIGN:
+ * - No instance variables store request-specific data
+ * - All data flows through method parameters (model, request, response)
+ * - No dependency on server-side session state
+ * - Each request is independent and can be handled by any instance
+ * - PDF generation uses in-memory ByteArrayOutputStream (no file system dependency)
+ */
 public abstract class AbstractPdfView extends AbstractView {
 
     /**
@@ -27,10 +44,18 @@ public abstract class AbstractPdfView extends AbstractView {
         return true;
     }
 
+    /**
+     * Renders PDF content in a stateless manner using in-memory processing.
+     * All data is provided through the model parameter, not session storage.
+     * This ensures compatibility with distributed cloud environments.
+     * 
+     * Uses ByteArrayOutputStream for in-memory PDF generation to avoid
+     * file system dependencies in cloud environments.
+     */
     @Override
     protected final void renderMergedOutputModel(Map<String, Object> model, HttpServletRequest request, HttpServletResponse response) throws Exception  {
 
-        // IE workaround: write into byte array first.
+        // IE workaround: write into byte array first (also cloud-friendly - no file system dependency).
         ByteArrayOutputStream baos = createTemporaryOutputStream();
 
         // Apply preferences and build metadata.
@@ -95,6 +120,12 @@ public abstract class AbstractPdfView extends AbstractView {
      * <p>Note that the passed-in HTTP response is just supposed to be used
      * for setting cookies or other HTTP headers. The built PDF document itself
      * will automatically get written to the response after this method returns.
+     * 
+     * CLOUD-NATIVE IMPLEMENTATION NOTES:
+     * - Do NOT access session attributes directly (use model data instead)
+     * - Do NOT write to file system (use in-memory streams)
+     * - All required data should be passed through the model parameter
+     * 
      * @param model the model Map
      * @param document the iText Document to add elements to
      * @param writer the PdfWriter to use

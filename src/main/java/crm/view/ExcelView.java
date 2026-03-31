@@ -10,8 +10,29 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Excel View implementation for exporting user data in a cloud-native stateless manner.
+ * 
+ * CLOUD READINESS IMPLEMENTATION:
+ * - All data is retrieved from the model parameter (passed by controller)
+ * - No session state is accessed or stored
+ * - Excel workbook is written directly to response output stream (no file system dependency)
+ * - Stateless design allows horizontal scaling across multiple instances
+ * - Compatible with AWS, Azure, and GCP cloud environments
+ * 
+ * USAGE:
+ * Controllers should pass all required data through the model:
+ * model.addAttribute("users", userList);
+ * 
+ * Do NOT store data in session attributes for view rendering.
+ */
 public class ExcelView extends AbstractXlsView{
 
+    /**
+     * Builds Excel document from model data in a stateless manner.
+     * All user data is retrieved from the model parameter, not from session.
+     * Excel workbook is written directly to the HTTP response stream.
+     */
     @Override
     protected void buildExcelDocument(Map<String, Object> model,
                                       Workbook workbook,
@@ -21,6 +42,7 @@ public class ExcelView extends AbstractXlsView{
         // change the file name
         response.setHeader("Content-Disposition", "attachment; filename=\"my-xls-file.xls\"");
 
+        // Retrieve data from model (not from session) - cloud-native stateless pattern
         @SuppressWarnings("unchecked")
         List<User> users = (List<User>) model.get("users");
 
@@ -60,6 +82,7 @@ public class ExcelView extends AbstractXlsView{
 
         int rowCount = 1;
 
+        // Populate rows with user data from model
         for(User user : users){
             Row userRow =  sheet.createRow(rowCount++);
             userRow.createCell(0).setCellValue(user.getFirstName());
