@@ -10,19 +10,47 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Excel view implementation for exporting User data.
+ * 
+ * CLOUD-READY: This view is stateless and does not access HTTP session state.
+ * All data is passed through the model parameter, ensuring horizontal scalability
+ * and compatibility with cloud environments (AWS, Azure, GCP).
+ * 
+ * The view can be safely load-balanced across multiple instances without
+ * session affinity requirements.
+ */
 public class ExcelView extends AbstractXlsView{
 
+    /**
+     * Builds the Excel document from the model data.
+     * 
+     * STATELESS IMPLEMENTATION: This method retrieves all data from the model parameter.
+     * No session state is accessed, ensuring cloud-native stateless behavior.
+     * 
+     * @param model Contains the "users" list - all data needed for Excel generation
+     * @param workbook The Excel workbook to populate
+     * @param request Not used for session access - only for potential request metadata
+     * @param response Target for Excel output with appropriate headers
+     */
     @Override
     protected void buildExcelDocument(Map<String, Object> model,
                                       Workbook workbook,
                                       HttpServletRequest request,
                                       HttpServletResponse response) throws Exception {
 
-        // change the file name
+        // Set response headers for file download
         response.setHeader("Content-Disposition", "attachment; filename=\"my-xls-file.xls\"");
 
+        // Retrieve data from model (stateless) - NOT from session
         @SuppressWarnings("unchecked")
         List<User> users = (List<User>) model.get("users");
+        
+        // Validate that required data is present in model
+        if (users == null) {
+            throw new IllegalStateException("Required 'users' data not found in model. " +
+                    "Ensure all data is passed via model for stateless operation.");
+        }
 
         // create excel xls sheet
         Sheet sheet = workbook.createSheet("User Detail");
@@ -60,6 +88,7 @@ public class ExcelView extends AbstractXlsView{
 
         int rowCount = 1;
 
+        // Write data rows - all from model (stateless)
         for(User user : users){
             Row userRow =  sheet.createRow(rowCount++);
             userRow.createCell(0).setCellValue(user.getFirstName());
