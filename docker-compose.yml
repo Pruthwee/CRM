@@ -1,0 +1,129 @@
+version: '3.8'
+
+services:
+  # Redis for distributed session management
+  redis:
+    image: redis:6-alpine
+    container_name: crm-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+    networks:
+      - crm-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  # MySQL database
+  mysql:
+    image: mysql:8
+    container_name: crm-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: crm
+      MYSQL_USER: crmuser
+      MYSQL_PASSWORD: crmpass
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - crm-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # CRM Application Instance 1
+  app1:
+    build: .
+    container_name: crm-app-1
+    environment:
+      # Database Configuration
+      DATABASE_URL: jdbc:mysql://mysql:3306/crm?useSSL=false
+      DATABASE_USERNAME: crmuser
+      DATABASE_PASSWORD: crmpass
+      
+      # Redis Configuration
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ""
+      
+      # Session Configuration
+      SESSION_TIMEOUT: 1800
+      
+      # Application Configuration
+      SERVER_PORT: 8080
+      SPRING_PROFILES_ACTIVE: cloud
+    ports:
+      - "8081:8080"
+    depends_on:
+      redis:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+    networks:
+      - crm-network
+    restart: unless-stopped
+
+  # CRM Application Instance 2 (for testing horizontal scaling)
+  app2:
+    build: .
+    container_name: crm-app-2
+    environment:
+      # Database Configuration
+      DATABASE_URL: jdbc:mysql://mysql:3306/crm?useSSL=false
+      DATABASE_USERNAME: crmuser
+      DATABASE_PASSWORD: crmpass
+      
+      # Redis Configuration
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ""
+      
+      # Session Configuration
+      SESSION_TIMEOUT: 1800
+      
+      # Application Configuration
+      SERVER_PORT: 8080
+      SPRING_PROFILES_ACTIVE: cloud
+    ports:
+      - "8082:8080"
+    depends_on:
+      redis:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+    networks:
+      - crm-network
+    restart: unless-stopped
+
+  # Nginx Load Balancer (simulates AWS ALB)
+  nginx:
+    image: nginx:alpine
+    container_name: crm-loadbalancer
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - app1
+      - app2
+    networks:
+      - crm-network
+    restart: unless-stopped
+
+volumes:
+  redis-data:
+    driver: local
+  mysql-data:
+    driver: local
+
+networks:
+  crm-network:
+    driver: bridge
