@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  # MySQL Database
+  mysql:
+    image: mysql:5.7
+    container_name: crm-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: crm
+      MYSQL_USER: crmuser
+      MYSQL_PASSWORD: crmpassword
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - crm-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # CRM Application
+  crm-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: crm-application
+    environment:
+      # Database Configuration
+      DATABASE_URL: jdbc:mysql://mysql:3306/crm?useSSL=false
+      DATABASE_USERNAME: crmuser
+      DATABASE_PASSWORD: crmpassword
+      DB_DDL_AUTO: update
+      
+      # Connection Pool
+      DB_POOL_SIZE: 10
+      DB_POOL_MIN_IDLE: 2
+      
+      # Azure Storage (disabled for local)
+      AZURE_STORAGE_ENABLED: "false"
+      
+      # Timezone
+      APP_TIMEZONE: UTC
+      DISPLAY_TIMEZONE: UTC
+      
+      # Logging
+      LOG_LEVEL: INFO
+      APP_LOG_LEVEL: DEBUG
+      
+      # Server
+      SERVER_PORT: 8080
+    ports:
+      - "8080:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - crm-network
+    restart: unless-stopped
+
+volumes:
+  mysql-data:
+    driver: local
+
+networks:
+  crm-network:
+    driver: bridge
