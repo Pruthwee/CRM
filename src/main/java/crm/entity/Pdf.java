@@ -5,12 +5,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.*;
-import javax.validation.constraints.Size;
-
-@Entity(name = "pdf")
-@Data
-@Builder
+/**
+ * PDF Entity - Cloud-ready
+ * Added cloudStoragePath field to store GCP Cloud Storage location
+ */
 @NoArgsConstructor
 @AllArgsConstructor
 public class Pdf {
@@ -21,9 +19,8 @@ public class Pdf {
 
     @Column(nullable = false)
     @Size(min = 2)
-    private String name;
-
-    @Transient
-    private String content;
-
+    
+    @Column(name = "cloud_storage_path")
+    private String cloudStoragePath;
+    
 }

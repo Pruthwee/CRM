@@ -1,0 +1,108 @@
+# Kubernetes Deployment for GKE
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: crm-app
+  labels:
+    app: crm-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: crm-app
+  template:
+    metadata:
+      labels:
+        app: crm-app
+    spec:
+      containers:
+      - name: crm-app
+        image: gcr.io/PROJECT_ID/crm-app:latest
+        ports:
+        - containerPort: 8080
+          name: http
+        env:
+        - name: SPRING_PROFILES_ACTIVE
+          value: "gcp"
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: crm-secrets
+              key: database-url
+        - name: DATABASE_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: crm-secrets
+              key: database-username
+        - name: DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: crm-secrets
+              key: database-password
+        - name: GCP_STORAGE_BUCKET
+          valueFrom:
+            configMapKeyRef:
+              name: crm-config
+              key: storage-bucket
+        - name: GCP_PROJECT_ID
+          valueFrom:
+            configMapKeyRef:
+              name: crm-config
+              key: project-id
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /appinfo/health
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /appinfo/health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: crm-app-service
+  labels:
+    app: crm-app
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 8080
+    protocol: TCP
+    name: http
+  selector:
+    app: crm-app
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: crm-config
+data:
+  storage-bucket: "crm-files-bucket"
+  project-id: "your-gcp-project-id"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: crm-secrets
+type: Opaque
+stringData:
+  database-url: "jdbc:mysql://CLOUD_SQL_PROXY_HOST:3306/crm?useSSL=false"
+  database-username: "root"
+  database-password: "your-secure-password"

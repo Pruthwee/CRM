@@ -8,12 +8,11 @@ import org.springframework.web.servlet.view.AbstractView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.ByteArrayOutputStream;
-import java.util.Map;
-
-public abstract class AbstractPdfView extends AbstractView {
-
-    /**
+/**
+ * Abstract PDF View - Cloud-ready base class
+ * Uses in-memory byte array instead of file system writes
+ * Compatible with containerized and cloud environments
+ */
      * This constructor sets the appropriate content type "application/pdf".
      * Note that IE won't take much notice of this, but there's not a lot we
      * can do about this. Generated documents should have a ".pdf" extension.

@@ -20,6 +20,13 @@ nbproject/private/
 build/
 nbbuild/
 dist/
-nbdist/
-.nb-gradle/
+### Cloud & Security ###
+.env
+*.key
+*.pem
+credentials.json
+service-account.json
 
+### Local Files ###
+*.pdf
+*.csv

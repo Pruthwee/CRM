@@ -7,12 +7,11 @@ import org.springframework.web.servlet.view.document.AbstractXlsView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.List;
-import java.util.Map;
-
-public class ExcelView extends AbstractXlsView{
-
-    @Override
+/**
+ * Excel View Implementation - Cloud-ready
+ * Generates Excel in-memory and streams to HTTP response
+ * Compatible with containerized and cloud environments
+ */
     protected void buildExcelDocument(Map<String, Object> model,
                                       Workbook workbook,
                                       HttpServletRequest request,

@@ -3,12 +3,11 @@ package crm.view;
 import org.springframework.web.servlet.view.AbstractView;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.util.Map;
-
-public abstract class AbstractCsvView extends AbstractView {
-
-    private static final String CONTENT_TYPE = "text/csv";
+/**
+ * Abstract CSV View - Cloud-ready base class
+ * Uses response streaming instead of file system writes
+ * Compatible with containerized and cloud environments
+ */
 
     private String url;
 
