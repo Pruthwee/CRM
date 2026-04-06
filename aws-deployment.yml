@@ -1,0 +1,109 @@
+# AWS Elastic Beanstalk Configuration
+# Place this file in .ebextensions/01-environment.config for Elastic Beanstalk deployment
+
+option_settings:
+  # Application Environment Variables
+  aws:elasticbeanstalk:application:environment:
+    # Database Configuration (use RDS endpoint)
+    DB_URL: jdbc:mysql://your-rds-endpoint.rds.amazonaws.com:3306/crm?useSSL=true
+    DB_USERNAME: admin
+    DB_PASSWORD: '`{"Ref": "DBPassword"}`'  # Use Elastic Beanstalk environment property
+    DDL_AUTO: update
+    
+    # Connection Pool Configuration
+    DB_POOL_SIZE: 20
+    DB_POOL_MIN_IDLE: 5
+    DB_CONNECTION_TIMEOUT: 30000
+    DB_IDLE_TIMEOUT: 600000
+    DB_MAX_LIFETIME: 1800000
+    
+    # Server Configuration
+    PORT: 5000  # Elastic Beanstalk uses port 5000 by default
+    
+    # AWS Configuration
+    AWS_REGION: us-east-1
+    S3_BUCKET_NAME: crm-files-bucket
+    FILE_STORAGE_TYPE: s3
+    
+    # Logging Configuration
+    LOG_LEVEL_ROOT: INFO
+    LOG_LEVEL_APP: INFO
+    
+    # Thymeleaf Configuration
+    THYMELEAF_CACHE: true
+    
+    # Actuator Configuration
+    MANAGEMENT_SECURITY_ENABLED: true
+    MANAGEMENT_ENDPOINTS: health,info,metrics
+    
+    # JVM Configuration
+    JAVA_OPTS: -Xmx512m -Xms256m -XX:+UseContainerSupport
+  
+  # Instance Configuration
+  aws:autoscaling:launchconfiguration:
+    InstanceType: t3.small
+    IamInstanceProfile: aws-elasticbeanstalk-ec2-role
+    EC2KeyName: your-key-pair
+    SecurityGroups: your-security-group
+  
+  # Auto Scaling Configuration
+  aws:autoscaling:asg:
+    MinSize: 2
+    MaxSize: 4
+    Cooldown: 360
+  
+  # Load Balancer Configuration
+  aws:elasticbeanstalk:environment:
+    LoadBalancerType: application
+    ServiceRole: aws-elasticbeanstalk-service-role
+  
+  # Health Check Configuration
+  aws:elasticbeanstalk:application:
+    Application Healthcheck URL: /appinfo/health
+  
+  # CloudWatch Logs
+  aws:elasticbeanstalk:cloudwatch:logs:
+    StreamLogs: true
+    DeleteOnTerminate: false
+    RetentionInDays: 7
+
+# Commands to run during deployment
+commands:
+  01_install_cloudwatch_agent:
+    command: |
+      wget https://s3.amazonaws.com/amazoncloudwatch-agent/amazon_linux/amd64/latest/amazon-cloudwatch-agent.rpm
+      rpm -U ./amazon-cloudwatch-agent.rpm
+
+# Files to create on the instance
+files:
+  "/etc/cloudwatch-config.json":
+    mode: "000644"
+    owner: root
+    group: root
+    content: |
+      {
+        "logs": {
+          "logs_collected": {
+            "files": {
+              "collect_list": [
+                {
+                  "file_path": "/var/log/eb-engine.log",
+                  "log_group_name": "/aws/elasticbeanstalk/crm-application/eb-engine",
+                  "log_stream_name": "{instance_id}"
+                },
+                {
+                  "file_path": "/var/log/web.stdout.log",
+                  "log_group_name": "/aws/elasticbeanstalk/crm-application/application",
+                  "log_stream_name": "{instance_id}"
+                }
+              ]
+            }
+          }
+        }
+      }
+
+# Container commands (run after application is extracted)
+container_commands:
+  01_migrate_database:
+    command: "echo 'Database migration handled by Hibernate DDL auto-update'"
+    leader_only: true

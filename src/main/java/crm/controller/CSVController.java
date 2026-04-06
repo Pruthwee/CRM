@@ -11,6 +11,15 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * REST Controller for CSV operations.
+ * Cloud-ready implementation that exports customer data as CSV.
+ * 
+ * For CSV import functionality in cloud environments:
+ * - Implement file upload endpoint using MultipartFile
+ * - Store uploaded files in AWS S3 or process them in-memory
+ * - Use streaming for large files to avoid memory issues
+ */
 @RestController
 public class CSVController {
 
@@ -32,42 +41,15 @@ public class CSVController {
         WriteCsvToResponse.writeCustomer(httpServletResponse.getWriter(), customer);
     }
 
-//    @GetMapping("/show-import")
-//    public String showImportCsvSite() {
-//        return "csv/import";
-//    }
-
-    /*@GetMapping("/import")
-    public String processRequestImportCsv(Model model) {
-        File document = ReadDataUtils.ReadFile("Select CSV file", null, "Only CSV Files", "csv");
-//        System.out.println(document.getName());
-
-            CSVReader reader;
-            List<String[]> data = new ArrayList<>();
-            try {
-                reader = new CSVReader(new FileReader(document));
-                String[] line;
-                while ((line = reader.readNext()) != null) {
-//                    System.out.println(line[1] + "\t" + line[2]);
-                    data.add(line);
-//                    if(line[1].equals("QUICK SUB")){
-//                        System.out.println(line[0] + "\t" + line[1] + "\t" + line[2]);
-//                    }
-                }
-                model.addAttribute("data", data);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-		*//*System.out.println(data.get(0)[1] + "\t" + data.get(0)[2]);
-		System.out.println(data.get(1)[1] + "\t" + data.get(1)[2]);*//*
-
-        return "csv/show";
-    }*/
-
-//    @GetMapping("/show")
-//    public String showPageWithCsvImported(@ModelAttribute List<String[]> data) {
-//        data.
-//        return "csv/show";
-//    }
-
+    // Note: CSV import functionality using desktop file chooser has been removed
+    // as it's not compatible with cloud environments.
+    // 
+    // To implement CSV import in cloud:
+    // 1. Create a file upload endpoint:
+    //    @PostMapping("/customers/import")
+    //    public ResponseEntity<?> importCustomers(@RequestParam("file") MultipartFile file)
+    // 
+    // 2. Process the uploaded file in-memory or save to S3
+    // 
+    // 3. Parse CSV and save customers to database
 }

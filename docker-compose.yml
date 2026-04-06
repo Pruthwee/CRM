@@ -1,0 +1,80 @@
+version: '3.8'
+
+services:
+  # MySQL Database
+  mysql:
+    image: mysql:5.7
+    container_name: crm-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: crm
+      MYSQL_USER: crmuser
+      MYSQL_PASSWORD: crmpass
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - crm-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # CRM Application
+  crm-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: crm-application
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      # Database Configuration
+      DB_URL: jdbc:mysql://mysql:3306/crm?useSSL=false
+      DB_USERNAME: crmuser
+      DB_PASSWORD: crmpass
+      DDL_AUTO: update
+      
+      # Connection Pool Configuration
+      DB_POOL_SIZE: 10
+      DB_POOL_MIN_IDLE: 5
+      DB_CONNECTION_TIMEOUT: 30000
+      
+      # Server Configuration
+      PORT: 8080
+      
+      # Logging Configuration
+      LOG_LEVEL_ROOT: INFO
+      LOG_LEVEL_APP: DEBUG
+      
+      # File Storage Configuration (local for development)
+      FILE_STORAGE_TYPE: local
+      
+      # Thymeleaf Configuration
+      THYMELEAF_CACHE: false
+      
+      # Actuator Configuration
+      MANAGEMENT_SECURITY_ENABLED: false
+      MANAGEMENT_ENDPOINTS: health,info,metrics,env
+    ports:
+      - "8080:8080"
+    networks:
+      - crm-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/appinfo/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+
+volumes:
+  mysql-data:
+    driver: local
+
+networks:
+  crm-network:
+    driver: bridge
