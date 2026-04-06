@@ -6,10 +6,11 @@
     <groupId>crm</groupId>
     <artifactId>crm</artifactId>
     <version>0.0.1-SNAPSHOT</version>
+    <!-- Cloud-ready packaging: JAR with embedded Tomcat -->
     <packaging>jar</packaging>
 
     <name>crm</name>
-    <description>Final project</description>
+    <description>Cloud-ready CRM application for Azure deployment</description>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
@@ -22,9 +23,11 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>1.8</java.version>
+        <azure.sdk.version>12.20.0</azure.sdk.version>
     </properties>
 
     <dependencies>
+        <!-- Spring Boot Starters -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
@@ -54,11 +57,15 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
+        
+        <!-- Development Tools -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>
             <scope>runtime</scope>
         </dependency>
+        
+        <!-- Database Drivers -->
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
@@ -69,11 +76,15 @@
             <artifactId>mysql-connector-java</artifactId>
             <scope>runtime</scope>
         </dependency>
+        
+        <!-- Utilities -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>
+        
+        <!-- Testing -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -84,6 +95,8 @@
             <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
         </dependency>
+        
+        <!-- Actuator for Cloud Monitoring -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
@@ -92,16 +105,21 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-actuator-docs</artifactId>
         </dependency>
+        
+        <!-- Validation -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/net.sourceforge.nekohtml/nekohtml -->
+        
+        <!-- HTML Parser -->
         <dependency>
             <groupId>net.sourceforge.nekohtml</groupId>
             <artifactId>nekohtml</artifactId>
             <version>1.9.21</version><!--$NO-MVN-MAN-VER$-->
         </dependency>
+        
+        <!-- PDF Generation -->
         <dependency>
             <groupId>com.itextpdf</groupId>
             <artifactId>itextpdf</artifactId>
@@ -117,11 +135,20 @@
             <artifactId>bcprov-jdk15on</artifactId>
             <version>1.59</version>
         </dependency>
+        
+        <!-- CSV Processing -->
         <dependency>
             <groupId>com.opencsv</groupId>
             <artifactId>opencsv</artifactId>
             <version>4.0</version>
         </dependency>
+        <dependency>
+            <groupId>net.sf.supercsv</groupId>
+            <artifactId>super-csv</artifactId>
+            <version>2.4.0</version>
+        </dependency>
+        
+        <!-- Excel Processing -->
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi</artifactId>
@@ -132,19 +159,36 @@
             <artifactId>poi-ooxml</artifactId>
             <version>3.15</version>
         </dependency>
+        
+        <!-- Azure SDK for Cloud Storage (Optional - for future Azure Blob Storage integration) -->
+        <!-- Uncomment when ready to integrate with Azure Blob Storage -->
+        <!--
         <dependency>
-            <groupId>net.sf.supercsv</groupId>
-            <artifactId>super-csv</artifactId>
-            <version>2.4.0</version>
+            <groupId>com.azure</groupId>
+            <artifactId>azure-storage-blob</artifactId>
+            <version>${azure.sdk.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.azure</groupId>
+            <artifactId>azure-identity</artifactId>
+            <version>1.5.0</version>
+        </dependency>
+        -->
     </dependencies>
 
     <build>
         <plugins>
+            <!-- Spring Boot Maven Plugin - Creates executable JAR -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <!-- Ensure fully executable JAR for cloud deployment -->
+                    <executable>true</executable>
+                </configuration>
             </plugin>
+            
+            <!-- Maven Compiler Plugin -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -156,6 +200,5 @@
             </plugin>
         </plugins>
     </build>
-
 
 </project>

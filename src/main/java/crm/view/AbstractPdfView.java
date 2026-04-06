@@ -4,6 +4,8 @@ import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.PageSize;
 import com.itextpdf.text.pdf.PdfWriter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.servlet.view.AbstractView;
 
 import javax.servlet.http.HttpServletRequest;
@@ -11,7 +13,16 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayOutputStream;
 import java.util.Map;
 
+/**
+ * Cloud-ready abstract PDF view for Spring MVC.
+ * Compatible with embedded servlet containers (Tomcat, Jetty, Undertow).
+ * Suitable for containerized deployments and cloud platforms.
+ * 
+ * This implementation generates PDFs in memory to avoid file system dependencies.
+ */
 public abstract class AbstractPdfView extends AbstractView {
+
+    private static final Logger log = LoggerFactory.getLogger(AbstractPdfView.class);
 
     /**
      * This constructor sets the appropriate content type "application/pdf".
@@ -30,22 +41,29 @@ public abstract class AbstractPdfView extends AbstractView {
     @Override
     protected final void renderMergedOutputModel(Map<String, Object> model, HttpServletRequest request, HttpServletResponse response) throws Exception  {
 
-        // IE workaround: write into byte array first.
-        ByteArrayOutputStream baos = createTemporaryOutputStream();
+        try {
+            // Generate PDF in memory (cloud-compatible approach)
+            ByteArrayOutputStream baos = createTemporaryOutputStream();
 
-        // Apply preferences and build metadata.
-        Document document = new Document(PageSize.A4.rotate(), 36, 36, 54, 36);
-        PdfWriter writer = PdfWriter.getInstance(document, baos);
-        prepareWriter(model, writer, request);
-        buildPdfMetadata(model, document, request);
+            // Apply preferences and build metadata
+            Document document = new Document(PageSize.A4.rotate(), 36, 36, 54, 36);
+            PdfWriter writer = PdfWriter.getInstance(document, baos);
+            prepareWriter(model, writer, request);
+            buildPdfMetadata(model, document, request);
 
-        // Build PDF document.
-        document.open();
-        buildPdfDocument(model, document, writer, request, response);
-        document.close();
+            // Build PDF document
+            document.open();
+            buildPdfDocument(model, document, writer, request, response);
+            document.close();
 
-        // Flush to HTTP response.
-        writeToResponse(response, baos);
+            // Flush to HTTP response
+            writeToResponse(response, baos);
+            
+            log.debug("PDF document rendered successfully, size: {} bytes", baos.size());
+        } catch (Exception e) {
+            log.error("Error rendering PDF document: {}", e.getMessage(), e);
+            throw e;
+        }
     }
 
     /**
