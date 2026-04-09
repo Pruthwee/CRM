@@ -1,0 +1,127 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: crm-application
+  labels:
+    app: crm
+    version: v1
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: crm
+  template:
+    metadata:
+      labels:
+        app: crm
+        version: v1
+    spec:
+      serviceAccountName: crm-sa
+      containers:
+      - name: crm
+        image: gcr.io/PROJECT_ID/crm:latest
+        ports:
+        - containerPort: 8080
+          name: http
+        env:
+        - name: PORT
+          value: "8080"
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: crm-secrets
+              key: database-url
+        - name: DB_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: crm-secrets
+              key: db-username
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: crm-secrets
+              key: db-password
+        - name: GCS_BUCKET_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: crm-config
+              key: gcs-bucket-name
+        - name: GCP_PROJECT_ID
+          valueFrom:
+            configMapKeyRef:
+              name: crm-config
+              key: gcp-project-id
+        - name: DB_POOL_SIZE
+          value: "20"
+        - name: DB_MIN_IDLE
+          value: "5"
+        - name: LOG_LEVEL
+          value: "INFO"
+        - name: APP_LOG_LEVEL
+          value: "DEBUG"
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /appinfo/health
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /appinfo/health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: crm-service
+  labels:
+    app: crm
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 8080
+    protocol: TCP
+    name: http
+  selector:
+    app: crm
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: crm-config
+data:
+  gcs-bucket-name: "your-gcs-bucket-name"
+  gcp-project-id: "your-gcp-project-id"
+  gcs-pdf-folder: "pdfs"
+  gcs-csv-folder: "csv"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: crm-secrets
+type: Opaque
+stringData:
+  database-url: "jdbc:mysql://CLOUD_SQL_IP:3306/crm?useSSL=false"
+  db-username: "your-db-username"
+  db-password: "your-db-password"
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: crm-sa
+  annotations:
+    iam.gke.io/gcp-service-account: crm-app@PROJECT_ID.iam.gserviceaccount.com

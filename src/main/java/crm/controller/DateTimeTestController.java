@@ -1,25 +1,19 @@
-package crm.controller;
-
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.Date;
-
-@Controller
-@RequestMapping("/date")
-public class DateTimeTestController {
-
-    @GetMapping("/test")
-    public String dateTimeTest(Model model) {
-        model.addAttribute("standardDate", new Date());
-        model.addAttribute("localDateTime", LocalDateTime.now());
-        model.addAttribute("localDate", LocalDate.now());
-        model.addAttribute("timestamp", Instant.now());
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+/**
+ * Cloud-ready DateTime controller that uses UTC timezone for all operations.
+ * Eliminates server-local timezone dependencies for distributed cloud environments.
+ */
+        // Use UTC timezone for all date/time operations to ensure consistency across cloud regions
+        Instant now = Instant.now();
+        ZonedDateTime utcDateTime = ZonedDateTime.now(ZoneOffset.UTC);
+        
+        model.addAttribute("timestamp", now);
+        model.addAttribute("utcDateTime", utcDateTime);
+        model.addAttribute("utcDate", LocalDate.now(ZoneOffset.UTC));
+        model.addAttribute("utcLocalDateTime", LocalDateTime.now(ZoneOffset.UTC));
+        model.addAttribute("epochMillis", now.toEpochMilli());
+        
         return "date/test";
     }
 
