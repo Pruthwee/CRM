@@ -1,0 +1,53 @@
+runtime: java
+env: flex
+runtime_config:
+  jdk: openjdk8
+
+# Automatic scaling configuration
+automatic_scaling:
+  min_num_instances: 1
+  max_num_instances: 10
+  cool_down_period_sec: 120
+  cpu_utilization:
+    target_utilization: 0.7
+
+# Resource configuration
+resources:
+  cpu: 1
+  memory_gb: 2
+  disk_size_gb: 10
+
+# Network configuration
+network:
+  forwarded_ports:
+    - 8080
+
+# Environment variables
+env_variables:
+  GCS_BUCKET_NAME: "crm-storage-bucket"
+  GCP_PROJECT_ID: "your-project-id"
+  GCS_PDF_FOLDER: "pdfs"
+  GCS_CSV_FOLDER: "csv-files"
+  DB_POOL_SIZE: "10"
+  LOG_LEVEL: "INFO"
+  THYMELEAF_CACHE: "true"
+
+# Health check configuration
+liveness_check:
+  path: "/appinfo/health"
+  check_interval_sec: 30
+  timeout_sec: 4
+  failure_threshold: 2
+  success_threshold: 2
+
+readiness_check:
+  path: "/appinfo/health"
+  check_interval_sec: 5
+  timeout_sec: 4
+  failure_threshold: 2
+  success_threshold: 2
+  app_start_timeout_sec: 300
+
+# Beta settings for Cloud SQL
+beta_settings:
+  cloud_sql_instances: "PROJECT_ID:REGION:INSTANCE_NAME"

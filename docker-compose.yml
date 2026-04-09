@@ -1,0 +1,91 @@
+version: '3.8'
+
+services:
+  # MySQL Database
+  mysql:
+    image: mysql:5.7
+    container_name: crm-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: crm
+      MYSQL_USER: crmuser
+      MYSQL_PASSWORD: crmpass
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - crm-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # CRM Application
+  crm-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: crm-app
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      # Database Configuration
+      DATABASE_URL: jdbc:mysql://mysql:3306/crm?useSSL=false
+      DB_USERNAME: crmuser
+      DB_PASSWORD: crmpass
+      DB_DDL_AUTO: update
+      DB_POOL_SIZE: 5
+      
+      # GCS Configuration (use emulator for local dev)
+      GCS_BUCKET_NAME: local-crm-bucket
+      GCP_PROJECT_ID: local-project
+      STORAGE_EMULATOR_HOST: http://gcs-emulator:9023
+      
+      # Application Configuration
+      PORT: 8080
+      LOG_LEVEL: DEBUG
+      APP_LOG_LEVEL: DEBUG
+      THYMELEAF_CACHE: false
+      
+      # Development mode
+      USE_LOCAL_STORAGE: true
+      LOCAL_STORAGE_PATH: /app/storage
+    ports:
+      - "8080:8080"
+    volumes:
+      - app-storage:/app/storage
+    networks:
+      - crm-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/appinfo/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Google Cloud Storage Emulator (for local development)
+  gcs-emulator:
+    image: fsouza/fake-gcs-server:latest
+    container_name: crm-gcs-emulator
+    command: -scheme http -port 9023
+    ports:
+      - "9023:9023"
+    volumes:
+      - gcs-data:/data
+    networks:
+      - crm-network
+
+volumes:
+  mysql-data:
+    driver: local
+  app-storage:
+    driver: local
+  gcs-data:
+    driver: local
+
+networks:
+  crm-network:
+    driver: bridge
