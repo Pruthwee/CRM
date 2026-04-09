@@ -55,13 +55,7 @@ public class UserServiceImpl implements UserService {
     public Iterable<User> listAllUsers() {
         return userRepository.findAllByEnabled(1);
     }
-
-    @Override
-    public User showUser(Long id) {
-        return userRepository.findOne(id);
-    }
-
-    @Override
+        return userRepository.findById(id).orElse(null);
     public void saveUser(User user) {
         Role userRole = roleRepository.findByName("ROLE_USER");
         user.setRole(userRole);
@@ -84,13 +78,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void editUser(User user) {
         String password = user.getPassword();
-        user.setPassword(passwordEncoder.encode(password));
-        Role userRole = roleRepository.findByName("ROLE_USER");
-        try {
-            userRole = roleRepository.findOne(user.getRole().getId());
-        } catch (NullPointerException e) {
-            userRole = roleRepository.findByName("ROLE_USER");
-        } finally {
+            userRole = roleRepository.findById(user.getRole().getId()).orElse(null);
             user.setRole(userRole);
             user.setEnabled(1);
             userRepository.save(user);
