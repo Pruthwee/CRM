@@ -1,5 +1,9 @@
 package crm.controller;
 
+import com.google.cloud.storage.BlobId;
+import com.google.cloud.storage.BlobInfo;
+import com.google.cloud.storage.Storage;
+import com.google.cloud.storage.StorageOptions;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.Paragraph;
@@ -14,29 +18,69 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 
 import javax.validation.Valid;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
+import java.io.ByteArrayOutputStream;
+import java.time.Instant;
+import java.util.concurrent.CompletableFuture;
 
+/**
+ * Cloud-ready PDF Controller that uses Google Cloud Storage for PDF persistence.
+ * Implements asynchronous operations for better cloud performance.
+ */
 @Controller
 @Slf4j
 public class PdfController {
 
-    private PdfService pdfService;
+    private final PdfService pdfService;
+    private final Storage storage;
+    private final String gcsBucketName;
 
     public PdfController(PdfService pdfService) {
         this.pdfService = pdfService;
+        this.storage = StorageOptions.getDefaultInstance().getService();
+        this.gcsBucketName = System.getenv().getOrDefault("GCS_BUCKET_NAME", "crm-data-bucket");
     }
 
-    private void generateSamplePdf(String fileName, String text) throws FileNotFoundException, DocumentException {
-        if (!fileName.endsWith(".pdf")) {
-            fileName += ".pdf";
-        }
-        Document document = new Document();
-        PdfWriter.getInstance(document, new FileOutputStream(fileName));
-        document.open();
-        Paragraph paragraph = new Paragraph(text);
-        document.add(paragraph);
-        document.close();
+    /**
+     * Generate PDF and store in Google Cloud Storage asynchronously
+     * @param fileName Name of the PDF file
+     * @param text Content of the PDF
+     * @return CompletableFuture with GCS blob name
+     */
+    private CompletableFuture<String> generateAndStorePdfAsync(String fileName, String text) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                if (!fileName.endsWith(".pdf")) {
+                    fileName += ".pdf";
+                }
+                
+                // Generate PDF in memory
+                Document document = new Document();
+                ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                PdfWriter.getInstance(document, outputStream);
+                document.open();
+                Paragraph paragraph = new Paragraph(text);
+                document.add(paragraph);
+                document.close();
+                
+                // Upload to GCS with timestamp to ensure uniqueness
+                String blobName = "pdfs/" + Instant.now().toEpochMilli() + "_" + fileName;
+                BlobId blobId = BlobId.of(gcsBucketName, blobName);
+                BlobInfo blobInfo = BlobInfo.newBuilder(blobId)
+                        .setContentType("application/pdf")
+                        .build();
+                
+                storage.create(blobInfo, outputStream.toByteArray());
+                log.info("PDF successfully uploaded to GCS: {}/{}", gcsBucketName, blobName);
+                
+                return blobName;
+            } catch (DocumentException e) {
+                log.error("Error generating PDF document", e);
+                throw new RuntimeException("Failed to generate PDF", e);
+            } catch (Exception e) {
+                log.error("Error uploading PDF to GCS", e);
+                throw new RuntimeException("Failed to upload PDF to GCS", e);
+            }
+        });
     }
 
     @GetMapping("/pdf-generator")
@@ -46,20 +90,34 @@ public class PdfController {
     }
 
     @PostMapping("/pdf-generator")
-    public String generatePdf(@Valid Pdf pdf, BindingResult bindingResult) {
+    public String generatePdf(@Valid Pdf pdf, BindingResult bindingResult, Model model) {
         if (bindingResult.hasErrors()) {
             return "redirect:/pdf-generator";
         } else {
             try {
-                generateSamplePdf(pdf.getName(), pdf.getContent());
+                // Asynchronously generate and store PDF in GCS
+                CompletableFuture<String> futureBlob = generateAndStorePdfAsync(pdf.getName(), pdf.getContent());
+                
+                // Wait for completion (with timeout handling)
+                String blobName = futureBlob.get(30, java.util.concurrent.TimeUnit.SECONDS);
+                
+                // Store blob reference in database
+                pdf.setName(blobName);
                 pdfService.savePdf(pdf);
-            } catch (FileNotFoundException e) {
-                log.info("File Not Found");
-            } catch (DocumentException e) {
-                log.info("Document");
+                
+                model.addAttribute("gcsPath", blobName);
+                log.info("PDF generation completed successfully: {}", blobName);
+                
+                return "pdf/success";
+            } catch (java.util.concurrent.TimeoutException e) {
+                log.error("PDF generation timed out", e);
+                model.addAttribute("error", "PDF generation timed out");
+                return "pdf/generator";
+            } catch (Exception e) {
+                log.error("Error during PDF generation and storage", e);
+                model.addAttribute("error", "Failed to generate PDF");
+                return "pdf/generator";
             }
-            return "pdf/success";
         }
     }
-
 }
