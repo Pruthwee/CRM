@@ -7,12 +7,11 @@ import org.springframework.web.servlet.view.document.AbstractXlsView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.List;
-import java.util.Map;
-
-public class ExcelView extends AbstractXlsView{
-
-    @Override
+/**
+ * Cloud-ready Excel view implementation for user data export.
+ * Compatible with embedded Tomcat server for Azure App Service deployment.
+ * Uses javax.servlet for Spring Boot 1.5.x compatibility.
+ */
     protected void buildExcelDocument(Map<String, Object> model,
                                       Workbook workbook,
                                       HttpServletRequest request,

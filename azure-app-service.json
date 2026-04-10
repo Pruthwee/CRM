@@ -1,0 +1,51 @@
+{
+  "version": "1.0",
+  "description": "Azure App Service configuration for CRM application",
+  "runtime": {
+    "name": "java",
+    "version": "8"
+  },
+  "startup": {
+    "command": "java -jar crm-0.0.1-SNAPSHOT.jar",
+    "timeout": 120
+  },
+  "healthCheck": {
+    "path": "/appinfo/health",
+    "interval": 30,
+    "timeout": 5,
+    "unhealthyThreshold": 3
+  },
+  "environmentVariables": {
+    "required": [
+      "DATABASE_URL",
+      "DATABASE_USERNAME",
+      "DATABASE_PASSWORD",
+      "AZURE_STORAGE_CONNECTION_STRING"
+    ],
+    "optional": [
+      "DB_POOL_SIZE",
+      "DB_MIN_IDLE",
+      "DB_CONNECTION_TIMEOUT",
+      "AZURE_STORAGE_CONTAINER",
+      "APP_TIMEZONE",
+      "LOG_LEVEL",
+      "THYMELEAF_CACHE"
+    ]
+  },
+  "scaling": {
+    "minInstances": 1,
+    "maxInstances": 10,
+    "rules": [
+      {
+        "metric": "CpuPercentage",
+        "threshold": 70,
+        "scaleUp": 1,
+        "scaleDown": 1
+      }
+    ]
+  },
+  "monitoring": {
+    "applicationInsights": true,
+    "logLevel": "Information"
+  }
+}

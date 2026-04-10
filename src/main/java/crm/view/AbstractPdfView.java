@@ -7,12 +7,11 @@ import com.itextpdf.text.pdf.PdfWriter;
 import org.springframework.web.servlet.view.AbstractView;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.ByteArrayOutputStream;
-import java.util.Map;
-
-public abstract class AbstractPdfView extends AbstractView {
-
+/**
+ * Cloud-ready abstract PDF view for Spring MVC.
+ * Compatible with embedded Tomcat server for Azure App Service deployment.
+ * Uses javax.servlet for Spring Boot 1.5.x compatibility.
+ */
     /**
      * This constructor sets the appropriate content type "application/pdf".
      * Note that IE won't take much notice of this, but there's not a lot we

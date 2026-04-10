@@ -6,12 +6,11 @@ import org.supercsv.io.ICsvBeanWriter;
 import org.supercsv.prefs.CsvPreference;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.util.List;
-import java.util.Map;
-
-public class CsvView extends AbstractCsvView {
-
+/**
+ * Cloud-ready CSV view implementation for user data export.
+ * Compatible with embedded Tomcat server for Azure App Service deployment.
+ * Uses javax.servlet for Spring Boot 1.5.x compatibility.
+ */
     @Override
     protected void buildCsvDocument(Map<String, Object> model, HttpServletRequest request, HttpServletResponse response) throws Exception {
 

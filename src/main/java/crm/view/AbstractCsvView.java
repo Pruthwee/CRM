@@ -3,12 +3,11 @@ package crm.view;
 import org.springframework.web.servlet.view.AbstractView;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.util.Map;
-
-public abstract class AbstractCsvView extends AbstractView {
-
-    private static final String CONTENT_TYPE = "text/csv";
+/**
+ * Cloud-ready abstract CSV view for Spring MVC.
+ * Compatible with embedded Tomcat server for Azure App Service deployment.
+ * Uses javax.servlet for Spring Boot 1.5.x compatibility.
+ */
 
     private String url;
 
