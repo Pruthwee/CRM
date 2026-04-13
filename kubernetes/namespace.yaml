@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: crm-component-pruthwee
+  labels:
+    name: crm-component-pruthwee
+    app: crm-component-pruthwee
+    environment: production

@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: crm-component-pruthwee-ingress
+  namespace: crm-component-pruthwee
+  labels:
+    app: crm-component-pruthwee
+  annotations:
+    kubernetes.io/ingress.class: "gce"
+    kubernetes.io/ingress.global-static-ip-name: "crm-component-pruthwee-ip"
+    networking.gke.io/managed-certificates: "crm-component-pruthwee-cert"
+spec:
+  rules:
+  - host: crm-component-pruthwee.example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: crm-component-pruthwee-service
+            port:
+              number: 80

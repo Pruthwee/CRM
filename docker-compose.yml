@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  crm-component-pruthwee:
+    image: crm-component-pruthwee:latest
+    container_name: crm-component-pruthwee
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+    environment:
+      # Spring configuration
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-host:3306/crm?useSSL=false
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=password
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      
+      # Actuator configuration
+      - MANAGEMENT_SECURITY_ENABLED=false
+      - MANAGEMENT_CONTEXT_PATH=/actuator
+      - ENDPOINTS_HEALTH_ENABLED=true
+      - ENDPOINTS_HEALTH_SENSITIVE=false
+      
+      # JVM options
+      - JAVA_OPTS=-Xmx512m -Xms256m -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0
+      
+      # Timezone
+      - TZ=UTC
+    networks:
+      - app-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8080/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+networks:
+  app-network:
+    driver: bridge
