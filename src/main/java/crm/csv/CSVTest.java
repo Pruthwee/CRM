@@ -2,6 +2,8 @@ package crm.csv;
 
 import com.opencsv.CSVReader;
 import crm.utils.ReadDataUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileReader;
@@ -10,6 +12,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CSVTest {
+
+    private static final Logger logger = LoggerFactory.getLogger(CSVTest.class);
 
     public static void main(String[] args) {
         File document = ReadDataUtils.ReadFile("Select CSV file", null, "Only CSV Files", "csv");
@@ -24,12 +28,12 @@ public class CSVTest {
 //                System.out.println(line[1] + "\t" + line[2]);
                 data.add(line);
                 if(line[1].equals("QUICK SUB")){
-                    System.out.println(line[0] + "\t" + line[1] + "\t" + line[2]);
+                    logger.info("{}\t{}\t{}", line[0], line[1], line[2]);
                 }
 
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Error reading CSV file", e);
         }
 		/*System.out.println(data.get(0)[1] + "\t" + data.get(0)[2]);
 		System.out.println(data.get(1)[1] + "\t" + data.get(1)[2]);*/
