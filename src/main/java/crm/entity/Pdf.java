@@ -23,6 +23,9 @@ public class Pdf {
     @Size(min = 2)
     private String name;
 
+    @Column(name = "firestore_document_id")
+    private String firestoreDocumentId;
+
     @Transient
     private String content;
 
