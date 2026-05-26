@@ -1,20 +1,121 @@
-package crm.controller;
-
-import com.itextpdf.text.Document;
-import com.itextpdf.text.DocumentException;
-import com.itextpdf.text.Paragraph;
+import com.azure.storage.blob.BlobClient;
+import com.azure.storage.blob.BlobContainerClientBuilder;
 import com.itextpdf.text.pdf.PdfWriter;
 import crm.entity.Pdf;
 import crm.service.PdfService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-
-import javax.validation.Valid;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
+    private void generateSamplePdf(String fileName, String text) throws FileNotFoundException, DocumentException {
+        if (!fileName.endsWith(".pdf")) {
+            fileName += ".pdf";
+        }
+
+        // Generate PDF into memory instead of local file system
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        Document document = new Document();
+        PdfWriter.getInstance(document, outputStream);
+        document.open();
+        Paragraph paragraph = new Paragraph(text);
+        document.add(paragraph);
+        document.close();
+
+        // Upload generated PDF to Azure Blob Storage for durable, cloud-native storage
+        String connectionString = System.getenv("AZURE_STORAGE_CONNECTION_STRING");
+        String containerName = System.getenv("AZURE_STORAGE_CONTAINER");
+        if (connectionString == null || containerName == null) {
+            throw new IllegalStateException("Azure Storage configuration missing. Please set AZURE_STORAGE_CONNECTION_STRING and AZURE_STORAGE_CONTAINER environment variables.");
+        }
+
+        BlobClient blobClient = new BlobContainerClientBuilder()
+                .connectionString(connectionString)
+                .containerName(containerName)
+                .buildClient()
+                .getBlobClient(fileName);
+
+        byte[] pdfBytes = outputStream.toByteArray();
+        blobClient.upload(new ByteArrayInputStream(pdfBytes), pdfBytes.length, true);
+        }
+
+        // Generate PDF into memory instead of local file system
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        Document document = new Document();
+        PdfWriter.getInstance(document, outputStream);
+        document.open();
+        Paragraph paragraph = new Paragraph(text);
+        document.add(paragraph);
+        document.close();
+
+        // Upload generated PDF to Azure Blob Storage for durable, cloud-native storage
+        String connectionString = System.getenv("AZURE_STORAGE_CONNECTION_STRING");
+        String containerName = System.getenv("AZURE_STORAGE_CONTAINER");
+        if (connectionString == null || containerName == null) {
+            throw new IllegalStateException("Azure Storage configuration missing. Please set AZURE_STORAGE_CONNECTION_STRING and AZURE_STORAGE_CONTAINER environment variables.");
+        }
+
+        BlobClient blobClient = new BlobContainerClientBuilder()
+                .connectionString(connectionString)
+                .containerName(containerName)
+                .buildClient()
+                .getBlobClient(fileName);
+
+        byte[] pdfBytes = outputStream.toByteArray();
+        blobClient.upload(new ByteArrayInputStream(pdfBytes), pdfBytes.length, true);
+        }
+
+        // Generate PDF into memory instead of local file system
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        Document document = new Document();
+        PdfWriter.getInstance(document, outputStream);
+        document.open();
+        Paragraph paragraph = new Paragraph(text);
+        document.add(paragraph);
+        document.close();
+
+        // Upload generated PDF to Azure Blob Storage for durable, cloud-native storage
+        String connectionString = System.getenv("AZURE_STORAGE_CONNECTION_STRING");
+        String containerName = System.getenv("AZURE_STORAGE_CONTAINER");
+        if (connectionString == null || containerName == null) {
+            throw new IllegalStateException("Azure Storage configuration missing. Please set AZURE_STORAGE_CONNECTION_STRING and AZURE_STORAGE_CONTAINER environment variables.");
+        }
+
+        BlobClient blobClient = new BlobContainerClientBuilder()
+                .connectionString(connectionString)
+                .containerName(containerName)
+                .buildClient()
+                .getBlobClient(fileName);
+
+        byte[] pdfBytes = outputStream.toByteArray();
+        blobClient.upload(new ByteArrayInputStream(pdfBytes), pdfBytes.length, true);
+        }
+
+        // Generate PDF into memory instead of local file system
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        Document document = new Document();
+        PdfWriter.getInstance(document, outputStream);
+        document.open();
+        Paragraph paragraph = new Paragraph(text);
+        document.add(paragraph);
+        document.close();
+
+        // Upload generated PDF to Azure Blob Storage for durable, cloud-native storage
+        String connectionString = System.getenv("AZURE_STORAGE_CONNECTION_STRING");
+        String containerName = System.getenv("AZURE_STORAGE_CONTAINER");
+        if (connectionString == null || containerName == null) {
+            throw new IllegalStateException("Azure Storage configuration missing. Please set AZURE_STORAGE_CONNECTION_STRING and AZURE_STORAGE_CONTAINER environment variables.");
+        }
+
+        BlobClient blobClient = new BlobContainerClientBuilder()
+                .connectionString(connectionString)
+                .containerName(containerName)
+                .buildClient()
+                .getBlobClient(fileName);
+
+        byte[] pdfBytes = outputStream.toByteArray();
+        blobClient.upload(new ByteArrayInputStream(pdfBytes), pdfBytes.length, true);
 import java.io.FileOutputStream;
 
 @Controller
