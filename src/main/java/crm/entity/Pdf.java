@@ -23,6 +23,9 @@ public class Pdf {
     @Size(min = 2)
     private String name;
 
+
+    @Column(name = "s3_key")
+    private String s3Key;
     @Transient
     private String content;
 
