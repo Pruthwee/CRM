@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- Console appender for container environments - logs to stdout -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Root logger configuration -->
+    <root level="${LOG_LEVEL:INFO}">
+        <appender-ref ref="CONSOLE" />
+    </root>
+
+    <!-- Application-specific logging -->
+    <logger name="crm" level="${APP_LOG_LEVEL:INFO}" />
+    
+    <!-- Spring framework logging -->
+    <logger name="org.springframework" level="${SPRING_LOG_LEVEL:INFO}" />
+    
+    <!-- Hibernate logging -->
+    <logger name="org.hibernate" level="${HIBERNATE_LOG_LEVEL:WARN}" />
+</configuration>
