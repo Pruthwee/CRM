@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Optional;
 
 @Service
 public class ContractServiceImpl implements ContractService {
@@ -37,7 +38,8 @@ public class ContractServiceImpl implements ContractService {
 
     @Override
     public Contract showContract(Long id) {
-        return contractRepository.findOne(id);
+        Optional<Contract> contract = contractRepository.findById(id);
+        return contract.orElse(null);
     }
 
     @Override
@@ -102,8 +104,17 @@ public class ContractServiceImpl implements ContractService {
 
     @Override
     public void saveContract(Contract contract) {
-        customerRepository.save(customerRepository.findAll());
-        userRepository.save(userRepository.findAll());
+        // Ensure related entities are managed before saving contract
+        Customer customer = contract.getCustomer();
+        if (customer != null && customer.getId() != null) {
+            customerRepository.findById(customer.getId()).ifPresent(contract::setCustomer);
+        }
+
+        User user = contract.getUser();
+        if (user != null && user.getId() != null) {
+            userRepository.findById(user.getId()).ifPresent(contract::setUser);
+        }
+
         contractRepository.save(contract);
     }
 

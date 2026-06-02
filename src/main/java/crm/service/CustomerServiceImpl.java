@@ -5,6 +5,7 @@ import crm.entity.Customer;
 import crm.repository.CustomerRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
 import java.util.Set;
 
 @Service
@@ -28,7 +29,8 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public Customer showCustomer(Long id) {
-        return customerRepository.findOne(id);
+        Optional<Customer> customer = customerRepository.findById(id);
+        return customer.orElse(null);
     }
 
     @Override
