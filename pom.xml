@@ -22,9 +22,24 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>1.8</java.version>
+        <!-- AWS SDK v2 version (cr-java-0061 – replaces hard-coded file paths with S3) -->
+        <aws.sdk.version>2.20.68</aws.sdk.version>
     </properties>
 
     <dependencies>
+        <!-- AWS SDK v2 – S3 (replaces hard-coded local file-path / JFileChooser access) -->
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>s3</artifactId>
+            <version>${aws.sdk.version}</version>
+        </dependency>
+        <!-- AWS SDK v2 – URL connection HTTP client (lightweight, no Netty required) -->
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>url-connection-client</artifactId>
+            <version>${aws.sdk.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
@@ -156,6 +171,5 @@
             </plugin>
         </plugins>
     </build>
-
 
 </project>
