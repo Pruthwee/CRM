@@ -6,8 +6,8 @@ import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 import crm.entity.User;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -61,7 +61,7 @@ public class PdfView extends AbstractPdfView {
         cell.setPhrase(new Phrase("Role_name", font));
         table.addCell(cell);
 
-        for(User user : users){
+        for (User user : users) {
             table.addCell(user.getFirstName());
             table.addCell(user.getLastName());
             table.addCell(user.getUsername());
