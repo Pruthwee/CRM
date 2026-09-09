@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: crm-testing
+  namespace: crm-testing
+  labels:
+    app: crm-testing
+    version: "1.0"
+    managed-by: kubectl
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: crm-testing
+  template:
+    metadata:
+      labels:
+        app: crm-testing
+        version: "1.0"
+    spec:
+      containers:
+        - name: crm-testing
+          image: "{{IMAGE_URI}}"
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "docker"
+            - name: SERVER_PORT
+              value: "8080"
+            - name: TZ
+              value: "UTC"
+            - name: JAVA_OPTS
+              value: "-Xms256m -Xmx512m -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -Djava.security.egd=file:/dev/./urandom"
+            - name: DB_URL
+              value: "{{DB_URL}}"
+            - name: DB_USERNAME
+              value: "{{DB_USERNAME}}"
+            - name: DB_PASSWORD
+              value: "{{DB_PASSWORD}}"
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "500m"
+              memory: "1Gi"
+          livenessProbe:
+            httpGet:
+              path: /appinfo/health
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
+            successThreshold: 1
+          readinessProbe:
+            httpGet:
+              path: /appinfo/health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            timeoutSeconds: 10
+            failureThreshold: 3
+            successThreshold: 1
+      terminationGracePeriodSeconds: 30
+      restartPolicy: Always

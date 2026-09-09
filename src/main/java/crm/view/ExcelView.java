@@ -10,7 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Map;
 
-public class ExcelView extends AbstractXlsView{
+public class ExcelView extends AbstractXlsView {
 
     @Override
     protected void buildExcelDocument(Map<String, Object> model,
@@ -32,10 +32,10 @@ public class ExcelView extends AbstractXlsView{
         CellStyle style = workbook.createCellStyle();
         Font font = workbook.createFont();
         font.setFontName("Arial");
-        style.setFillForegroundColor(HSSFColor.BLUE.index);
+        style.setFillForegroundColor(HSSFColor.HSSFColorPredefined.BLUE.getIndex());
         style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
         font.setBold(true);
-        font.setColor(HSSFColor.WHITE.index);
+        font.setColor(HSSFColor.HSSFColorPredefined.WHITE.getIndex());
         style.setFont(font);
 
 
@@ -60,8 +60,8 @@ public class ExcelView extends AbstractXlsView{
 
         int rowCount = 1;
 
-        for(User user : users){
-            Row userRow =  sheet.createRow(rowCount++);
+        for (User user : users) {
+            Row userRow = sheet.createRow(rowCount++);
             userRow.createCell(0).setCellValue(user.getFirstName());
             userRow.createCell(1).setCellValue(user.getLastName());
             userRow.createCell(2).setCellValue(user.getUsername());
