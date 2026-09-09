@@ -20,7 +20,7 @@ import java.util.Set;
 @Repository
 public interface CustomerRepository extends JpaRepository<Customer, Long> {
 
-    @Query(value = "select max(id) from crm.customer", nativeQuery = true)
+    @Query(value = "SELECT MAX(id) FROM customer", nativeQuery = true)
     Long getMaxId();
 
     Iterable<Customer> findAllByEnabled(int enabled);

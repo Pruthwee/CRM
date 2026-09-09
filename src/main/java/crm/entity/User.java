@@ -14,10 +14,12 @@ import jakarta.persistence.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "users")
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "users_seq")
+    @SequenceGenerator(name = "users_seq", sequenceName = "users_id_seq", allocationSize = 1)
     private Long id;
 
     @Column(nullable = false, unique = true)
@@ -28,8 +30,10 @@ public class User {
     @NotEmpty(message = "Please provide an e-mail")
     private String email;
 
+    @Column(name = "first_name")
     private String firstName;
 
+    @Column(name = "last_name")
     private String lastName;
 
     private String password;
@@ -37,6 +41,7 @@ public class User {
     private int enabled;
 
     @ManyToOne
+    @JoinColumn(name = "role_role_id")
     private Role role;
 
     public int getColumnCount() {
