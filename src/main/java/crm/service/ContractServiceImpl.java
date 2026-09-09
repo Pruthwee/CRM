@@ -5,8 +5,6 @@ import crm.entity.Customer;
 import crm.entity.Status;
 import crm.entity.User;
 import crm.repository.ContractRepository;
-import crm.repository.CustomerRepository;
-import crm.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -16,13 +14,9 @@ import java.time.LocalDate;
 public class ContractServiceImpl implements ContractService {
 
     private ContractRepository contractRepository;
-    private CustomerRepository customerRepository;
-    private UserRepository userRepository;
 
-    public ContractServiceImpl(ContractRepository contractRepository, CustomerRepository customerRepository, UserRepository userRepository) {
+    public ContractServiceImpl(ContractRepository contractRepository) {
         this.contractRepository = contractRepository;
-        this.customerRepository = customerRepository;
-        this.userRepository = userRepository;
     }
 
     @Override
@@ -37,7 +31,7 @@ public class ContractServiceImpl implements ContractService {
 
     @Override
     public Contract showContract(Long id) {
-        return contractRepository.findOne(id);
+        return contractRepository.findById(id).get();
     }
 
     @Override
@@ -102,8 +96,6 @@ public class ContractServiceImpl implements ContractService {
 
     @Override
     public void saveContract(Contract contract) {
-        customerRepository.save(customerRepository.findAll());
-        userRepository.save(userRepository.findAll());
         contractRepository.save(contract);
     }
 
