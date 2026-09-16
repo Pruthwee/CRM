@@ -1,5 +1,6 @@
 package crm.utils;
 
+// Utility class for reading files via Swing file chooser dialog (uses standard Java SE javax.swing)
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.io.File;
