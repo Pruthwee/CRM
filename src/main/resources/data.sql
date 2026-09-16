@@ -5,11 +5,11 @@ VALUES ('1', 'a@u', '1', 'AFN', 'ALN', '$2a$10$iPgnenFIoM67cYL9let/iOLBphbDaEkAz
   ('2', 'u@m', '1', 'UFN', 'ULN', '$2a$10$Ad.n7DA3e9QT.a8hXymxI.JKnAYTLR4nD4stJtfMiCLcr7FiZ/st.', 'user', '2'),
   ('3', 'm@m', '1', 'MFN', 'MLN', '$2a$10$iQy1MYc97kkXBwrCJ5I9gO/QcRT.rdY6UDKriBvG.iyX29miDaKDe', 'manager', '3'),
   ('4', 'o@m', '1', 'OFN', 'OLN', '$2a$10$VVH6bnOWLMczmH12BY99c.T6JMzMErt/gZKRCPfYlXcq7JMFoqkWW', 'owner', '4');
-# admin - pass = admin
-# user - pass = user
-# manager - pass = manager
-# owner - pass = owner
-SET FOREIGN_KEY_CHECKS=0;
+-- admin - pass = admin
+-- user - pass = user
+-- manager - pass = manager
+-- owner - pass = owner
+
 INSERT INTO category (category_id, category)
 VALUES ('1', 'small'), ('2', 'medium'), ('3', 'big');
 
@@ -23,5 +23,3 @@ VALUES (1, 1), (2, 2), (3, 3);
 
 INSERT INTO contract (id, begin_date, content, end_date, name, status, value, customer_id, user_id)
 VALUES ('1', '2018-02-24 00:00:00', 'contract content', '2018-02-25 00:00:00', 'ContractName', 'PROPOSED', '100000.00', '2', '2');
-
-SET FOREIGN_KEY_CHECKS=1;
