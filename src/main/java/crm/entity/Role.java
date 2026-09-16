@@ -1,6 +1,7 @@
 package crm.entity;
 
 import lombok.Data;
+import jakarta.persistence.SequenceGenerator;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -15,7 +16,8 @@ import jakarta.persistence.Table;
 public class Role {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "role_seq")
+    @SequenceGenerator(name = "role_seq", sequenceName = "role_seq", allocationSize = 1)
     @Column(name = "role_id")
     private int id;
 

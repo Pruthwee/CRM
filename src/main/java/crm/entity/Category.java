@@ -3,6 +3,7 @@ package crm.entity;
 import lombok.Data;
 
 import jakarta.persistence.*;
+import jakarta.persistence.SequenceGenerator;
 
 @Entity
 @Data
@@ -10,7 +11,8 @@ import jakarta.persistence.*;
 public class Category {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "category_seq")
+    @SequenceGenerator(name = "category_seq", sequenceName = "category_seq", allocationSize = 1)
     @Column(name = "category_id")
     private Long id;
 
