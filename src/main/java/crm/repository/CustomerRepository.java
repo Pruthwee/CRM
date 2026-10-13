@@ -49,7 +49,7 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
     Iterable<Customer> findByEnabledAndFirstNameAndLastName(int enabled, String firstName, String lastName);
     Iterable<Customer> findByFirstNameAndLastName(String firstName, String lastName);
 
-    Iterable<Customer> findByEnabledAndCategories(int enabled, Set<Category> category);
-    Iterable<Customer> findByCategories(Set<Category> category);
+    Iterable<Customer> findByEnabledAndCategoriesIn(int enabled, Set<Category> category);
+    Iterable<Customer> findByCategoriesIn(Set<Category> category);
 
 }
