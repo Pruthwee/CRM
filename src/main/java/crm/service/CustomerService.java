@@ -37,9 +37,9 @@ public interface CustomerService {
     Iterable<Customer> findByEnabledFalseAndPhone(int phone);
     Iterable<Customer> findByPhone(int phone);
 
-    Iterable<Customer> findByEnabledTrueAndCategories(Set<Category> category);
-    Iterable<Customer> findByEnabledFalseAndCategories(Set<Category> category);
-    Iterable<Customer> findByCategories(Set<Category> category);
+    Iterable<Customer> findByEnabledTrueAndCategoriesIn(Set<Category> category);
+    Iterable<Customer> findByEnabledFalseAndCategoriesIn(Set<Category> category);
+    Iterable<Customer> findByCategoriesIn(Set<Category> category);
 
     Iterable<Customer> findByEnabledTrueAndFirstName(String firstName);
     Iterable<Customer> findByEnabledFalseAndFirstName(String firstName);

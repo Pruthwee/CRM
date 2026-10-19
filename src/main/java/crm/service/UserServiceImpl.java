@@ -5,6 +5,7 @@ import crm.entity.User;
 import crm.repository.RoleRepository;
 import crm.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -42,6 +43,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Autowired
+    @Lazy
     public void setSpringDataUserDetailsService(SpringDataUserDetailsService springDataUserDetailsService) {
         this.springDataUserDetailsService = springDataUserDetailsService;
     }
@@ -58,7 +60,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User showUser(Long id) {
-        return userRepository.findOne(id);
+        return userRepository.findById(id).orElse(null);
     }
 
     @Override
@@ -87,7 +89,7 @@ public class UserServiceImpl implements UserService {
         user.setPassword(passwordEncoder.encode(password));
         Role userRole = roleRepository.findByName("ROLE_USER");
         try {
-            userRole = roleRepository.findOne(user.getRole().getId());
+            userRole = roleRepository.findById(user.getRole().getId()).orElse(null);
         } catch (NullPointerException e) {
             userRole = roleRepository.findByName("ROLE_USER");
         } finally {
