@@ -6,20 +6,25 @@ import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.pdf.PdfWriter;
 import crm.entity.Pdf;
 import crm.service.PdfService;
+import crm.utils.S3Storage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import software.amazon.awssdk.core.exception.SdkException;
 
 import javax.validation.Valid;
+import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
+import java.io.IOException;
 
 @Controller
 @Slf4j
 public class PdfController {
+
+    private static final String PDF_KEY_PREFIX = "pdf/";
 
     private PdfService pdfService;
 
@@ -31,12 +36,20 @@ public class PdfController {
         if (!fileName.endsWith(".pdf")) {
             fileName += ".pdf";
         }
+        ByteArrayOutputStream pdfBytes = new ByteArrayOutputStream();
         Document document = new Document();
-        PdfWriter.getInstance(document, new FileOutputStream(fileName));
+        PdfWriter.getInstance(document, pdfBytes);
         document.open();
         Paragraph paragraph = new Paragraph(text);
         document.add(paragraph);
         document.close();
+        try {
+            S3Storage.put(PDF_KEY_PREFIX + fileName, pdfBytes.toByteArray(), "application/pdf");
+        } catch (IOException | SdkException e) {
+            FileNotFoundException notStored = new FileNotFoundException("Could not store " + fileName + " in S3: " + e.getMessage());
+            notStored.initCause(e);
+            throw notStored;
+        }
     }
 
     @GetMapping("/pdf-generator")
