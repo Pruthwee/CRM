@@ -6,6 +6,7 @@ import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.pdf.PdfWriter;
 import crm.entity.Pdf;
 import crm.service.PdfService;
+import crm.utils.S3Storage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -13,9 +14,11 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 
+import software.amazon.awssdk.core.exception.SdkException;
+
 import javax.validation.Valid;
+import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 
 @Controller
 @Slf4j
@@ -32,11 +35,13 @@ public class PdfController {
             fileName += ".pdf";
         }
         Document document = new Document();
-        PdfWriter.getInstance(document, new FileOutputStream(fileName));
+        ByteArrayOutputStream content = new ByteArrayOutputStream();
+        PdfWriter.getInstance(document, content);
         document.open();
         Paragraph paragraph = new Paragraph(text);
         document.add(paragraph);
         document.close();
+        S3Storage.put("pdf/" + fileName, content.toByteArray(), "application/pdf");
     }
 
     @GetMapping("/pdf-generator")
@@ -57,6 +62,8 @@ public class PdfController {
                 log.info("File Not Found");
             } catch (DocumentException e) {
                 log.info("Document");
+            } catch (SdkException e) {
+                log.info("File Not Found");
             }
             return "pdf/success";
         }

@@ -3,22 +3,22 @@ package crm.csv;
 import com.opencsv.CSVReader;
 import crm.utils.ReadDataUtils;
 
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
 public class CSVTest {
 
     public static void main(String[] args) {
-        File document = ReadDataUtils.ReadFile("Select CSV file", null, "Only CSV Files", "csv");
+        InputStream document = ReadDataUtils.ReadStream("Select CSV file", null, "Only CSV Files", "csv");
 //        System.out.println(document.getName());
 
         CSVReader reader;
         List<Object[]> data = new ArrayList<>();
         try {
-            reader = new CSVReader(new FileReader(document));
+            reader = new CSVReader(new InputStreamReader(document));
             String[] line;
             while ((line = reader.readNext()) != null) {
 //                System.out.println(line[1] + "\t" + line[2]);
